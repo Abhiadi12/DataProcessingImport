@@ -1,0 +1,13 @@
+{
+  "name": "data-processing-import-tooling",
+  "private": true,
+  "version": "1.0.0",
+  "description": "learning data processing and data imports.",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "prettier": "^3.3.3"
+  }
+}

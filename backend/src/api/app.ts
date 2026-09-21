@@ -4,6 +4,7 @@ import { errorHandlerMiddleware } from "./middlewares/error-handler.middleware.j
 import { NotFoundError } from "../errors/not-found.error.js";
 import { ok } from "../utils/create-response.js";
 import { container } from "../container.js";
+import { v1Router } from "./routes/v1/index.js";
 
 export function createApp() {
   const app = express();
@@ -15,6 +16,8 @@ export function createApp() {
     await container.prisma.$queryRaw`SELECT 1`;
     res.json(ok("ok", { uptime: process.uptime(), database: "up" }));
   });
+
+  app.use("/api/v1", v1Router);
 
   app.use((req, _res, next) => {
     next(new NotFoundError(`No route for ${req.method} ${req.path}`));

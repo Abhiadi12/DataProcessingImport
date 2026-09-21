@@ -10,3 +10,12 @@ export async function register(req: Request, res: Response, next: NextFunction):
     next(error);
   }
 }
+
+export async function login(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const result = await container.authService.login(req.body);
+    res.json(ok("Login successful", result));
+  } catch (error) {
+    next(error);
+  }
+}

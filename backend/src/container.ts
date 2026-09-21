@@ -1,3 +1,8 @@
-// Composition root — construct services and repositories here, once, as
-// they're added. Nothing to wire yet (no repositories/services exist).
-export const container = {};
+import { PrismaClient } from "@prisma/client";
+import { env } from "./config/env.js";
+
+const prisma = new PrismaClient({
+  log: env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
+});
+
+export const container = { prisma };

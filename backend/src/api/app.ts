@@ -3,6 +3,7 @@ import { requestIdMiddleware } from "./middlewares/request-id.middleware.js";
 import { errorHandlerMiddleware } from "./middlewares/error-handler.middleware.js";
 import { NotFoundError } from "../errors/not-found.error.js";
 import { ok } from "../utils/create-response.js";
+import { container } from "../container.js";
 
 export function createApp() {
   const app = express();
@@ -10,8 +11,9 @@ export function createApp() {
   app.use(express.json());
   app.use(requestIdMiddleware);
 
-  app.get("/health", (_req, res) => {
-    res.json(ok("ok", { uptime: process.uptime() }));
+  app.get("/health", async (_req, res) => {
+    await container.prisma.$queryRaw`SELECT 1`;
+    res.json(ok("ok", { uptime: process.uptime(), database: "up" }));
   });
 
   app.use((req, _res, next) => {

@@ -14,12 +14,14 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "studio": "prisma studio"
   },
   "dependencies": {
     "@prisma/client": "6.19.3",
-    "dotenv": "^18.0.1",
-    "dotenv-expand": "^1000.0.0",
+    "bcrypt": "^6.0.0",
+    "dotenv": "17.4.2",
+    "dotenv-expand": "13.0.0",
     "express": "^5.1.0",
     "pino": "^9.5.0",
     "pino-http": "^10.3.0",
@@ -27,6 +29,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.5",
     "eslint": "^9.17.0",

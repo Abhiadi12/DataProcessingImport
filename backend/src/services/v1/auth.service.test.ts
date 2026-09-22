@@ -3,24 +3,34 @@ import { env } from "../../config/env.js";
 import { ConflictError } from "../../errors/conflict.error.js";
 import { UnauthorizedError } from "../../errors/unauthorized.error.js";
 import {
+  asRefreshTokenRepository,
   asUserRepository,
+  buildRefreshToken,
   buildUser,
+  createFakeRefreshTokenRepository,
   createFakeUserRepository,
+  type FakeRefreshTokenRepository,
   type FakeUserRepository,
 } from "../../testing/factories.js";
 import {
+  mockFamilyId,
   mockLoginInput,
   mockPassword,
+  mockRefreshToken,
+  mockRefreshTokenValue,
   mockRegisterInput,
   mockUnknownEmail,
+  mockUserId,
   mockWrongPassword,
 } from "../../testing/mockData/index.js";
 import { signAccessToken, verifyAccessToken } from "../../utils/jwt.js";
 import { hashPassword, verifyPassword } from "../../utils/password.js";
+import { hashRefreshToken } from "../../utils/refresh-token.js";
 import { AuthService } from "./auth.service.js";
 
 describe("AuthService", () => {
   let repo: FakeUserRepository;
+  let refreshTokenRepo: FakeRefreshTokenRepository;
   let service: AuthService;
   let passwordHash: string;
 
@@ -29,10 +39,11 @@ describe("AuthService", () => {
     passwordHash = await hashPassword(mockPassword);
   });
 
-  // A fresh fake repository per test, so no test can leak state into another.
+  // Fresh fakes per test, so no test can leak state into another.
   beforeEach(() => {
     repo = createFakeUserRepository();
-    service = new AuthService(asUserRepository(repo));
+    refreshTokenRepo = createFakeRefreshTokenRepository();
+    service = new AuthService(asUserRepository(repo), asRefreshTokenRepository(refreshTokenRepo));
   });
 
   describe("register", () => {
@@ -89,6 +100,94 @@ describe("AuthService", () => {
       await expect(
         service.login({ ...mockLoginInput, password: mockWrongPassword }),
       ).rejects.toThrow(new UnauthorizedError("Invalid email or password"));
+    });
+
+    it("starts a different family on every login", async () => {
+      repo.findByEmail.mockResolvedValue(buildUser({ passwordHash }));
+
+      await service.login(mockLoginInput);
+      await service.login(mockLoginInput);
+
+      const [first, second] = refreshTokenRepo.create.mock.calls;
+      expect(first![0].familyId).not.toBe(second![0].familyId);
+    });
+  });
+
+  describe("refresh", () => {
+    it("rotates within the same family and returns a brand-new token pair", async () => {
+      refreshTokenRepo.findByHash.mockResolvedValue(buildRefreshToken());
+      repo.findById.mockResolvedValue(buildUser());
+      refreshTokenRepo.rotate.mockResolvedValue(true);
+
+      const session = await service.refresh(mockRefreshTokenValue);
+
+      expect(refreshTokenRepo.findByHash).toHaveBeenCalledWith(
+        hashRefreshToken(mockRefreshTokenValue),
+      );
+      const [rotatedId, next] = refreshTokenRepo.rotate.mock.calls[0]!;
+      expect(rotatedId).toBe(mockRefreshToken.id);
+      expect(next.familyId).toBe(mockFamilyId);
+      expect(next.tokenHash).toBe(hashRefreshToken(session.refreshToken.value));
+      expect(session.refreshToken.value).not.toBe(mockRefreshTokenValue);
+      expect(verifyAccessToken(session.accessToken)).toBe(mockUserId);
+    });
+
+    it("rejects a token it never issued", async () => {
+      refreshTokenRepo.findByHash.mockResolvedValue(null);
+
+      await expect(service.refresh("never-issued")).rejects.toThrow(UnauthorizedError);
+      expect(refreshTokenRepo.revokeFamily).not.toHaveBeenCalled();
+    });
+
+    it("treats an already-rotated token as stolen and revokes its whole family", async () => {
+      refreshTokenRepo.findByHash.mockResolvedValue(buildRefreshToken({ revokedAt: new Date() }));
+
+      await expect(service.refresh(mockRefreshTokenValue)).rejects.toThrow(
+        new UnauthorizedError("Invalid refresh token"),
+      );
+      expect(refreshTokenRepo.revokeFamily).toHaveBeenCalledWith(mockFamilyId);
+      expect(refreshTokenRepo.rotate).not.toHaveBeenCalled();
+    });
+
+    it("rejects an expired token without rotating it", async () => {
+      refreshTokenRepo.findByHash.mockResolvedValue(
+        buildRefreshToken({ expiresAt: new Date(Date.now() - 1000) }),
+      );
+
+      await expect(service.refresh(mockRefreshTokenValue)).rejects.toThrow("Refresh token expired");
+      expect(refreshTokenRepo.rotate).not.toHaveBeenCalled();
+    });
+
+    it("ends the session if the user has been deactivated since logging in", async () => {
+      refreshTokenRepo.findByHash.mockResolvedValue(buildRefreshToken());
+      repo.findById.mockResolvedValue(buildUser({ isActive: false }));
+
+      await expect(service.refresh(mockRefreshTokenValue)).rejects.toThrow(UnauthorizedError);
+      expect(refreshTokenRepo.revokeFamily).toHaveBeenCalledWith(mockFamilyId);
+    });
+  });
+
+  describe("logout", () => {
+    it("revokes the family of the presented token", async () => {
+      refreshTokenRepo.findByHash.mockResolvedValue(buildRefreshToken());
+
+      await service.logout(mockRefreshTokenValue);
+
+      expect(refreshTokenRepo.revokeFamily).toHaveBeenCalledWith(mockFamilyId);
+    });
+
+    it("does nothing when no token is presented", async () => {
+      await service.logout(undefined);
+
+      expect(refreshTokenRepo.findByHash).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("logoutAll", () => {
+    it("revokes every session family belonging to the user", async () => {
+      await service.logoutAll(mockUserId);
+
+      expect(refreshTokenRepo.revokeAllForUser).toHaveBeenCalledWith(mockUserId);
     });
   });
 

@@ -1,4 +1,5 @@
 import express from "express";
+import cookieParser from "cookie-parser";
 import { requestIdMiddleware } from "./middlewares/request-id.middleware.js";
 import { errorHandlerMiddleware } from "./middlewares/error-handler.middleware.js";
 import { NotFoundError } from "../errors/not-found.error.js";
@@ -10,6 +11,7 @@ export function createApp() {
   const app = express();
 
   app.use(express.json());
+  app.use(cookieParser());
   app.use(requestIdMiddleware);
 
   app.get("/health", async (_req, res) => {

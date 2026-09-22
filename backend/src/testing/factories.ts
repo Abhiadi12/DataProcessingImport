@@ -17,6 +17,8 @@ export function createFakeUserRepository() {
     create: vi.fn<UserRepository["create"]>(),
     findByEmail: vi.fn<UserRepository["findByEmail"]>(),
     findById: vi.fn<UserRepository["findById"]>(),
+    updateProfile: vi.fn<UserRepository["updateProfile"]>(),
+    updatePasswordAndRevokeSessions: vi.fn<UserRepository["updatePasswordAndRevokeSessions"]>(),
   };
 }
 

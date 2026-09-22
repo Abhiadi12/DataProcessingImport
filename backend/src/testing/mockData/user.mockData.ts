@@ -6,6 +6,8 @@ export const mockPassword = "secret-pass-1";
 
 export const mockWrongPassword = "wrong-password";
 
+export const mockNewPassword = "new-secret-pass-2";
+
 export const mockUser: User = {
   id: mockUserId,
   email: "john@example.com",

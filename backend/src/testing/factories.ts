@@ -1,14 +1,17 @@
-import type { User } from "@prisma/client";
+import type { RefreshToken, User } from "@prisma/client";
 import { vi } from "vitest";
+import type { RefreshTokenRepository } from "../repositories/v1/refresh-token.repository.js";
 import type { UserRepository } from "../repositories/v1/user.repository.js";
-import { mockUser } from "./mockData/index.js";
+import { mockRefreshToken, mockUser } from "./mockData/index.js";
 
 export function buildUser(overrides: Partial<User> = {}): User {
   return { ...mockUser, ...overrides };
 }
 
-//INFO: A stand-in for UserRepository whose methods do nothing until a test tells
-// them what to return (e.g. repo.findByEmail.mockResolvedValue(user)).
+export function buildRefreshToken(overrides: Partial<RefreshToken> = {}): RefreshToken {
+  return { ...mockRefreshToken, ...overrides };
+}
+
 export function createFakeUserRepository() {
   return {
     create: vi.fn<UserRepository["create"]>(),
@@ -17,8 +20,23 @@ export function createFakeUserRepository() {
   };
 }
 
+export function createFakeRefreshTokenRepository() {
+  return {
+    create: vi.fn<RefreshTokenRepository["create"]>(),
+    findByHash: vi.fn<RefreshTokenRepository["findByHash"]>(),
+    rotate: vi.fn<RefreshTokenRepository["rotate"]>(),
+    revokeFamily: vi.fn<RefreshTokenRepository["revokeFamily"]>(),
+    revokeAllForUser: vi.fn<RefreshTokenRepository["revokeAllForUser"]>(),
+  };
+}
+
 export type FakeUserRepository = ReturnType<typeof createFakeUserRepository>;
+export type FakeRefreshTokenRepository = ReturnType<typeof createFakeRefreshTokenRepository>;
 
 export function asUserRepository(fake: FakeUserRepository): UserRepository {
   return fake as unknown as UserRepository;
+}
+
+export function asRefreshTokenRepository(fake: FakeRefreshTokenRepository): RefreshTokenRepository {
+  return fake as unknown as RefreshTokenRepository;
 }

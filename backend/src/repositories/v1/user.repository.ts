@@ -1,4 +1,4 @@
-import { Prisma, type PrismaClient, type User } from "@prisma/client";
+import { Prisma, type PrismaClient, type Role, type User } from "@prisma/client";
 import { ConflictError } from "../../errors/conflict.error.js";
 import { NotFoundError } from "../../errors/not-found.error.js";
 
@@ -11,6 +11,21 @@ export interface CreateUserData {
 export interface UpdateProfileData {
   name?: string;
   email?: string;
+}
+
+export interface UpdateUserAdminData {
+  role?: Role;
+  isActive?: boolean;
+}
+
+export interface ListUsersParams {
+  skip: number;
+  take: number;
+}
+
+export interface ListUsersResult {
+  users: User[];
+  total: number;
 }
 
 export class UserRepository {
@@ -30,6 +45,36 @@ export class UserRepository {
 
   findById(id: string): Promise<User | null> {
     return this.prisma.user.findUnique({ where: { id } });
+  }
+
+  async list({ skip, take }: ListUsersParams): Promise<ListUsersResult> {
+    const [users, total] = await this.prisma.$transaction([
+      this.prisma.user.findMany({ skip, take, orderBy: { createdAt: "desc" } }),
+      this.prisma.user.count(),
+    ]);
+    return { users, total };
+  }
+
+  async countActiveAdmins(): Promise<number> {
+    return this.prisma.user.count({ where: { role: "ADMIN", isActive: true } });
+  }
+
+  async updateAsAdmin(id: string, data: UpdateUserAdminData): Promise<User> {
+    try {
+      return await this.prisma.user.update({
+        where: { id },
+        data: {
+          ...data,
+          ...(data.isActive === false && {
+            refreshTokens: {
+              updateMany: { where: { revokedAt: null }, data: { revokedAt: new Date() } },
+            },
+          }),
+        },
+      });
+    } catch (error) {
+      throw toDomainError(error);
+    }
   }
 
   async updateProfile(id: string, data: UpdateProfileData): Promise<User> {

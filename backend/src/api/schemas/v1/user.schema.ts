@@ -1,3 +1,4 @@
+import { Role } from "@prisma/client";
 import { z } from "zod";
 import { newPasswordSchema } from "./auth.schema.js";
 
@@ -19,3 +20,25 @@ export const changePasswordSchema = z
     message: "New password must be different from the current password",
     path: ["newPassword"],
   });
+
+export const listUsersQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+});
+
+export const userIdParamSchema = z.object({
+  id: z.string().uuid(),
+});
+
+//INFO: Admin-only schema for updating a user's role or active status.
+export const updateUserSchema = z
+  .object({
+    role: z.nativeEnum(Role).optional(),
+    isActive: z.boolean().optional(),
+  })
+  .refine((body) => body.role !== undefined || body.isActive !== undefined, {
+    message: "Provide at least one of role or isActive",
+  });
+
+export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>;
+export type UserIdParam = z.infer<typeof userIdParamSchema>;

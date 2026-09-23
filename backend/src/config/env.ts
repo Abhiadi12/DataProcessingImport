@@ -17,6 +17,9 @@ const envSchema = z.object({
     .enum(["true", "false"])
     .default("true")
     .transform((value) => value === "true"),
+  // Optional: only the seed script reads these, so the app still boots without them.
+  SEED_ADMIN_EMAIL: z.string().trim().toLowerCase().email().optional(),
+  SEED_ADMIN_PASSWORD: z.string().min(8).optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

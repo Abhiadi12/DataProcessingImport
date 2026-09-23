@@ -1,3 +1,4 @@
+import { Role } from "@prisma/client";
 import { Router } from "express";
 import { v1UserController } from "../../controllers/index.js";
 import { authenticate } from "../../middlewares/authenticate.middleware.js";
@@ -30,21 +31,21 @@ userRouter.patch(
 userRouter.get(
   "/",
   authenticate,
-  requireRole("ADMIN"),
+  requireRole(Role.ADMIN),
   validate({ query: listUsersQuerySchema }),
   v1UserController.listUsers,
 );
 userRouter.get(
   "/:id",
   authenticate,
-  requireRole("ADMIN"),
+  requireRole(Role.ADMIN),
   validate({ params: userIdParamSchema }),
   v1UserController.getUserById,
 );
 userRouter.patch(
   "/:id",
   authenticate,
-  requireRole("ADMIN"),
+  requireRole(Role.ADMIN),
   validate({ params: userIdParamSchema, body: updateUserSchema }),
   v1UserController.updateUser,
 );

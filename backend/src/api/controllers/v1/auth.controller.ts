@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { AUTH_MESSAGES } from "../../../constants/index.js";
 import { container } from "../../../container.js";
 import { UnauthorizedError } from "../../../errors/unauthorized.error.js";
 import { ok } from "../../../utils/create-response.js";
@@ -11,7 +12,7 @@ import {
 export async function register(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const user = await container.authService.register(req.body);
-    res.status(201).json(ok("Registration successful", user));
+    res.status(201).json(ok(AUTH_MESSAGES.REGISTERED, user));
   } catch (error) {
     next(error);
   }
@@ -21,7 +22,7 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
   try {
     const { refreshToken, ...session } = await container.authService.login(req.body);
     setRefreshTokenCookie(res, refreshToken);
-    res.json(ok("Login successful", session));
+    res.json(ok(AUTH_MESSAGES.LOGGED_IN, session));
   } catch (error) {
     next(error);
   }
@@ -31,12 +32,12 @@ export async function refresh(req: Request, res: Response, next: NextFunction): 
   try {
     const presentedToken = readRefreshTokenCookie(req);
     if (!presentedToken) {
-      throw new UnauthorizedError("Missing refresh token");
+      throw new UnauthorizedError(AUTH_MESSAGES.MISSING_REFRESH_TOKEN);
     }
 
     const { refreshToken, ...session } = await container.authService.refresh(presentedToken);
     setRefreshTokenCookie(res, refreshToken);
-    res.json(ok("Token refreshed", session));
+    res.json(ok(AUTH_MESSAGES.TOKEN_REFRESHED, session));
   } catch (error) {
     //INFO: A rejected refresh token is useless; clear it so the browser stops sending it.
     if (error instanceof UnauthorizedError) {
@@ -50,7 +51,7 @@ export async function logout(req: Request, res: Response, next: NextFunction): P
   try {
     await container.authService.logout(readRefreshTokenCookie(req));
     clearRefreshTokenCookie(res);
-    res.json(ok("Logged out"));
+    res.json(ok(AUTH_MESSAGES.LOGGED_OUT));
   } catch (error) {
     next(error);
   }
@@ -58,10 +59,10 @@ export async function logout(req: Request, res: Response, next: NextFunction): P
 
 export async function logoutAll(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    if (!req.user) throw new UnauthorizedError("Not authenticated");
+    if (!req.user) throw new UnauthorizedError(AUTH_MESSAGES.NOT_AUTHENTICATED);
     await container.authService.logoutAll(req.user.id);
     clearRefreshTokenCookie(res);
-    res.json(ok("Logged out of all sessions"));
+    res.json(ok(AUTH_MESSAGES.LOGGED_OUT_EVERYWHERE));
   } catch (error) {
     next(error);
   }

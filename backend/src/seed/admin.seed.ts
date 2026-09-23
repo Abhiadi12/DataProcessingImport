@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Role } from "@prisma/client";
 import { env } from "../config/env.js";
 import { hashPassword } from "../utils/password.js";
 
@@ -14,7 +14,7 @@ async function main(): Promise<void> {
     const existing = await prisma.user.findUnique({ where: { email } });
 
     if (existing) {
-      await prisma.user.update({ where: { email }, data: { role: "ADMIN", isActive: true } });
+      await prisma.user.update({ where: { email }, data: { role: Role.ADMIN, isActive: true } });
       console.log(`Seed: existing user ${email} is now an active ADMIN`);
       return;
     }
@@ -24,7 +24,7 @@ async function main(): Promise<void> {
         email,
         name: "Administrator",
         passwordHash: await hashPassword(env.SEED_ADMIN_PASSWORD),
-        role: "ADMIN",
+        role: Role.ADMIN,
       },
     });
     console.log(`Seed: created ADMIN ${email}`);

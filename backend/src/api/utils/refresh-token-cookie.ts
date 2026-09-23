@@ -1,14 +1,15 @@
 import type { CookieOptions, Request, Response } from "express";
+import { AUTH_ROUTE_PREFIX, REFRESH_TOKEN_COOKIE } from "../../constants/index.js";
 import { env } from "../../config/env.js";
 import type { IssuedRefreshToken } from "../../services/v1/auth.service.js";
 
-export const REFRESH_TOKEN_COOKIE = "refresh_token";
+export { REFRESH_TOKEN_COOKIE };
 
 const cookieOptions: CookieOptions = {
   httpOnly: true,
   secure: env.COOKIE_SECURE,
   sameSite: "lax",
-  path: "/api/v1/auth",
+  path: AUTH_ROUTE_PREFIX,
 };
 
 export function setRefreshTokenCookie(res: Response, token: IssuedRefreshToken): void {

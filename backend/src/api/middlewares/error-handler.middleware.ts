@@ -1,10 +1,9 @@
 import type { NextFunction, Request, Response } from "express";
+import { COMMON_MESSAGES } from "../../constants/index.js";
 import { BaseError } from "../../errors/base.error.js";
 import { fail } from "../../utils/create-response.js";
 import { logger } from "../../utils/logger.js";
 import { env } from "../../config/env.js";
-
-const GENERIC_MESSAGE = "Internal server error";
 
 export function errorHandlerMiddleware(
   err: unknown,
@@ -20,7 +19,8 @@ export function errorHandlerMiddleware(
       err.message,
     );
 
-    const message = err.isOperational || !isProduction ? err.message : GENERIC_MESSAGE;
+    const message =
+      err.isOperational || !isProduction ? err.message : COMMON_MESSAGES.INTERNAL_ERROR;
     res.status(err.statusCode).json(
       fail(message, {
         code: err.name,
@@ -32,6 +32,6 @@ export function errorHandlerMiddleware(
 
   logger.error({ err, requestId: req.requestId }, "Unhandled error");
 
-  const message = isProduction ? GENERIC_MESSAGE : String(err);
+  const message = isProduction ? COMMON_MESSAGES.INTERNAL_ERROR : String(err);
   res.status(500).json(fail(message, { code: "InternalError" }));
 }

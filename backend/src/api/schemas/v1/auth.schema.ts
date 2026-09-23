@@ -1,14 +1,21 @@
 import { z } from "zod";
+import {
+  EMAIL_MAX_LENGTH,
+  NAME_MAX_LENGTH,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  VALIDATION_MESSAGES,
+} from "../../../constants/index.js";
 
 export const newPasswordSchema = z
   .string()
-  .min(8, "Password must be at least 8 characters")
-  .max(24, "Password must be at most 24 characters");
+  .min(PASSWORD_MIN_LENGTH, VALIDATION_MESSAGES.PASSWORD_TOO_SHORT)
+  .max(PASSWORD_MAX_LENGTH, VALIDATION_MESSAGES.PASSWORD_TOO_LONG);
 
 export const registerSchema = z.object({
-  email: z.string().trim().toLowerCase().email().max(254),
+  email: z.string().trim().toLowerCase().email().max(EMAIL_MAX_LENGTH),
   password: newPasswordSchema,
-  name: z.string().trim().min(1).max(100),
+  name: z.string().trim().min(1).max(NAME_MAX_LENGTH),
 });
 
 export const loginSchema = z.object({

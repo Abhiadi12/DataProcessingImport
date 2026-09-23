@@ -1,4 +1,5 @@
-import { Prisma, type PrismaClient, type Role, type User } from "@prisma/client";
+import { Prisma, Role, type PrismaClient, type User } from "@prisma/client";
+import { USER_MESSAGES } from "../../constants/index.js";
 import { ConflictError } from "../../errors/conflict.error.js";
 import { NotFoundError } from "../../errors/not-found.error.js";
 
@@ -56,7 +57,7 @@ export class UserRepository {
   }
 
   async countActiveAdmins(): Promise<number> {
-    return this.prisma.user.count({ where: { role: "ADMIN", isActive: true } });
+    return this.prisma.user.count({ where: { role: Role.ADMIN, isActive: true } });
   }
 
   async updateAsAdmin(id: string, data: UpdateUserAdminData): Promise<User> {
@@ -108,11 +109,11 @@ function toDomainError(error: unknown): unknown {
     // guarantee against duplicates, including two concurrent requests that both
     // pass any "does it exist?" check.
     if (error.code === "P2002") {
-      return new ConflictError("An account with this email already exists");
+      return new ConflictError(USER_MESSAGES.EMAIL_TAKEN);
     }
     //INFO: P2025 = the row to update doesn't exist.
     if (error.code === "P2025") {
-      return new NotFoundError("User not found");
+      return new NotFoundError(USER_MESSAGES.NOT_FOUND);
     }
   }
   return error;

@@ -1,3 +1,5 @@
+import { Role } from "@prisma/client";
+import { USER_MESSAGES } from "../../constants/index.js";
 import { BadRequestError } from "../../errors/bad-request.error.js";
 import { ForbiddenError } from "../../errors/forbidden.error.js";
 import { NotFoundError } from "../../errors/not-found.error.js";
@@ -29,7 +31,7 @@ export class UserService {
   async getProfile(userId: string): Promise<PublicUser> {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new NotFoundError("User not found");
+      throw new NotFoundError(USER_MESSAGES.NOT_FOUND);
     }
     return toPublicUser(user);
   }
@@ -42,12 +44,12 @@ export class UserService {
   async changePassword(userId: string, input: ChangePasswordInput): Promise<void> {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new NotFoundError("User not found");
+      throw new NotFoundError(USER_MESSAGES.NOT_FOUND);
     }
 
     if (!(await verifyPassword(input.currentPassword, user.passwordHash))) {
-      throw new BadRequestError("Current password is incorrect", {
-        fieldErrors: { currentPassword: ["Current password is incorrect"] },
+      throw new BadRequestError(USER_MESSAGES.CURRENT_PASSWORD_INCORRECT, {
+        fieldErrors: { currentPassword: [USER_MESSAGES.CURRENT_PASSWORD_INCORRECT] },
       });
     }
 
@@ -77,14 +79,14 @@ export class UserService {
   ): Promise<PublicUser> {
     const target = await this.userRepository.findById(targetId);
     if (!target) {
-      throw new NotFoundError("User not found");
+      throw new NotFoundError(USER_MESSAGES.NOT_FOUND);
     }
 
     if (currentUserId === targetId) {
-      throw new ForbiddenError("You cannot change your own role or active status");
+      throw new ForbiddenError(USER_MESSAGES.CANNOT_MODIFY_SELF);
     }
-    if (target.role === "ADMIN" && input.role && input.role !== "ADMIN") {
-      throw new ForbiddenError("You cannot demote an admin to a lower role");
+    if (target.role === Role.ADMIN && input.role && input.role !== Role.ADMIN) {
+      throw new ForbiddenError(USER_MESSAGES.CANNOT_DEMOTE_ADMIN);
     }
 
     const user = await this.userRepository.updateAsAdmin(targetId, input);

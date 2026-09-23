@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { AUTH_MESSAGES } from "../../constants/index.js";
 import { container } from "../../container.js";
 import { UnauthorizedError } from "../../errors/unauthorized.error.js";
 import type { AuthenticatedUser } from "../../services/v1/auth.service.js";
@@ -16,7 +17,7 @@ export async function authenticate(
 ): Promise<void> {
   const [scheme, token] = req.headers.authorization?.split(" ") ?? [];
   if (scheme !== "Bearer" || !token) {
-    next(new UnauthorizedError("Missing or malformed Authorization header"));
+    next(new UnauthorizedError(AUTH_MESSAGES.MISSING_AUTH_HEADER));
     return;
   }
 

@@ -5,8 +5,6 @@ import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "./validation.constants
 // Keeping them here stops those pairs from drifting apart.
 
 export const AUTH_MESSAGES = {
-  // Used for BOTH an unknown email and a wrong password: telling them apart
-  // would turn login into a way to discover which emails are registered.
   INVALID_CREDENTIALS: "Invalid email or password",
   ACCOUNT_DISABLED: "This account has been disabled",
   NOT_AUTHENTICATED: "Not authenticated",
@@ -14,7 +12,6 @@ export const AUTH_MESSAGES = {
   INVALID_ACCESS_TOKEN: "Invalid access token",
   ACCESS_TOKEN_EXPIRED: "Access token expired",
   MISSING_REFRESH_TOKEN: "Missing refresh token",
-  // Also deliberately generic: a thief must not learn they tripped the alarm.
   INVALID_REFRESH_TOKEN: "Invalid refresh token",
   REFRESH_TOKEN_EXPIRED: "Refresh token expired",
   REGISTERED: "Registration successful",
@@ -40,6 +37,16 @@ export const USER_MESSAGES = {
   USER_UPDATED: "User updated",
 } as const;
 
+export const PROJECT_MESSAGES = {
+  NOT_FOUND: "Project not found",
+  NOT_A_MEMBER: "You are not a member of this project",
+  CREATED: "Project created",
+  FETCHED: "Project fetched",
+  LIST_FETCHED: "Projects fetched",
+  UPDATED: "Project updated",
+  DELETED: "Project deleted",
+} as const;
+
 export const VALIDATION_MESSAGES = {
   INVALID_BODY: "Invalid request body",
   INVALID_QUERY: "Invalid query parameters",
@@ -49,6 +56,7 @@ export const VALIDATION_MESSAGES = {
   CURRENT_PASSWORD_REQUIRED: "Current password is required",
   NEW_PASSWORD_MUST_DIFFER: "New password must be different from the current password",
   PROVIDE_NAME_OR_EMAIL: "Provide at least one of name or email",
+  PROVIDE_NAME_OR_DESCRIPTION: "Provide at least one of name or description",
   PROVIDE_ROLE_OR_STATUS: "Provide at least one of role or isActive",
 } as const;
 

@@ -10,6 +10,8 @@ import {
   listProjectsQuerySchema,
   projectIdParamSchema,
   updateProjectSchema,
+  addProjectMemberSchema,
+  projectMemberParamsSchema,
 } from "../../schemas/v1/project.schema.js";
 
 export const projectRouter = Router();
@@ -33,26 +35,50 @@ projectRouter.get(
   "/:id",
   authenticate,
   validate({ params: projectIdParamSchema }),
-  requireProjectAccess,
+  requireProjectAccess(),
   v1ProjectController.getProjectById,
 );
 
-// Membership first, then role: a MANAGER who isn't a member gets 404, not 403.
 projectRouter.patch(
   "/:id",
   authenticate,
   validate({ params: projectIdParamSchema, body: updateProjectSchema }),
-  requireProjectAccess,
+  requireProjectAccess(),
   requireRole(Role.MANAGER),
   v1ProjectController.updateProject,
 );
 
-// Same rule as PATCH: a MANAGER who belongs to the project, or an ADMIN.
 projectRouter.delete(
   "/:id",
   authenticate,
   validate({ params: projectIdParamSchema }),
-  requireProjectAccess,
+  requireProjectAccess(),
   requireRole(Role.MANAGER),
   v1ProjectController.deleteProject,
+);
+
+projectRouter.get(
+  "/:id/members",
+  authenticate,
+  validate({ params: projectIdParamSchema, query: listProjectsQuerySchema }),
+  requireProjectAccess(Role.MANAGER),
+  v1ProjectController.listProjectMembers,
+);
+
+projectRouter.post(
+  "/:id/members",
+  authenticate,
+  validate({ params: projectIdParamSchema, body: addProjectMemberSchema }),
+  requireProjectAccess(),
+  requireRole(Role.MANAGER),
+  v1ProjectController.addProjectMember,
+);
+
+projectRouter.delete(
+  "/:id/members/:userId",
+  authenticate,
+  validate({ params: projectMemberParamsSchema }),
+  requireProjectAccess(),
+  requireRole(Role.MANAGER),
+  v1ProjectController.removeProjectMember,
 );

@@ -45,6 +45,12 @@ export const PROJECT_MESSAGES = {
   LIST_FETCHED: "Projects fetched",
   UPDATED: "Project updated",
   DELETED: "Project deleted",
+  MEMBERS_FETCHED: "Project members fetched",
+  MEMBER_ADDED: "Member added to project",
+  MEMBER_REMOVED: "Member removed from project",
+  ALREADY_A_MEMBER: "That user is already a member of this project",
+  TARGET_NOT_A_MEMBER: "That user is not a member of this project",
+  LAST_MEMBER: "A project must have at least one member",
 } as const;
 
 export const VALIDATION_MESSAGES = {

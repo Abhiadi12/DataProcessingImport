@@ -1,5 +1,12 @@
-import { Prisma, type PrismaClient, type Project } from "@prisma/client";
+import {
+  Prisma,
+  type PrismaClient,
+  type Project,
+  type ProjectMember,
+  type User,
+} from "@prisma/client";
 import { PROJECT_MESSAGES } from "../../constants/index.js";
+import { ConflictError } from "../../errors/conflict.error.js";
 import { NotFoundError } from "../../errors/not-found.error.js";
 
 export interface CreateProjectData {
@@ -15,6 +22,15 @@ export interface UpdateProjectData {
 export interface ListProjectsParams {
   skip: number;
   take: number;
+}
+
+export interface ProjectMemberWithUser extends ProjectMember {
+  user: User;
+}
+
+export interface ListMembersResult {
+  members: ProjectMemberWithUser[];
+  total: number;
 }
 
 export interface ListProjectsResult {
@@ -83,6 +99,65 @@ export class ProjectRepository {
       throw toDomainError(error);
     }
   }
+
+  async listMembers(
+    projectId: string,
+    { skip, take }: ListProjectsParams,
+  ): Promise<ListMembersResult> {
+    const where = { projectId };
+    const [members, total] = await this.prisma.$transaction([
+      this.prisma.projectMember.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: "asc" },
+        include: { user: true },
+      }),
+      this.prisma.projectMember.count({ where }),
+    ]);
+    return { members, total };
+  }
+
+  async addMember(projectId: string, userId: string): Promise<ProjectMemberWithUser> {
+    try {
+      return await this.prisma.projectMember.create({
+        data: { projectId, userId },
+        include: { user: true },
+      });
+    } catch (error) {
+      throw toMemberDomainError(error);
+    }
+  }
+
+  // The count and the delete run in one transaction so the last member can't
+  // slip out between the check and the write.
+  async removeMember(projectId: string, userId: string): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const remaining = await tx.projectMember.count({ where: { projectId } });
+      if (remaining <= 1) {
+        throw new ConflictError(PROJECT_MESSAGES.LAST_MEMBER);
+      }
+
+      const { count } = await tx.projectMember.deleteMany({ where: { projectId, userId } });
+      if (count === 0) {
+        throw new NotFoundError(PROJECT_MESSAGES.TARGET_NOT_A_MEMBER);
+      }
+    });
+  }
+}
+
+function toMemberDomainError(error: unknown): unknown {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    // P2002 = the (project_id, user_id) unique index rejected a duplicate.
+    if (error.code === "P2002") {
+      return new ConflictError(PROJECT_MESSAGES.ALREADY_A_MEMBER);
+    }
+    // P2003 = foreign key violation: the project or user doesn't exist.
+    if (error.code === "P2003") {
+      return new NotFoundError(PROJECT_MESSAGES.NOT_FOUND);
+    }
+  }
+  return error;
 }
 
 function toDomainError(error: unknown): unknown {

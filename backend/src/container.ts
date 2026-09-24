@@ -17,6 +17,6 @@ const projectRepository = new ProjectRepository(prisma);
 
 const authService = new AuthService(userRepository, refreshTokenRepository);
 const userService = new UserService(userRepository);
-const projectService = new ProjectService(projectRepository);
+const projectService = new ProjectService(projectRepository, userRepository);
 
 export const container = { prisma, authService, userService, projectService };

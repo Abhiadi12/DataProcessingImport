@@ -1,12 +1,14 @@
 import { Role, type Project } from "@prisma/client";
-import { PROJECT_MESSAGES } from "../../constants/index.js";
+import { PROJECT_MESSAGES, USER_MESSAGES } from "../../constants/index.js";
 import { NotFoundError } from "../../errors/not-found.error.js";
 import type {
   CreateProjectData,
   ProjectRepository,
   UpdateProjectData,
 } from "../../repositories/v1/project.repository.js";
+import type { UserRepository } from "../../repositories/v1/user.repository.js";
 import type { Paginated } from "../../types/pagination.js";
+import { toProjectMemberView, type ProjectMemberView } from "./project-member.mapper.js";
 import type { AuthenticatedUser } from "./auth.service.js";
 
 export type CreateProjectInput = CreateProjectData;
@@ -18,7 +20,10 @@ export interface ListProjectsInput {
 }
 
 export class ProjectService {
-  constructor(private readonly projectRepository: ProjectRepository) {}
+  constructor(
+    private readonly projectRepository: ProjectRepository,
+    private readonly userRepository: UserRepository,
+  ) {}
 
   createProject(creatorId: string, input: CreateProjectInput): Promise<Project> {
     return this.projectRepository.create(input, creatorId);
@@ -55,5 +60,42 @@ export class ProjectService {
 
   deleteProject(id: string): Promise<void> {
     return this.projectRepository.delete(id);
+  }
+
+  async listMembers(
+    projectId: string,
+    { page, limit }: ListProjectsInput,
+  ): Promise<Paginated<ProjectMemberView>> {
+    await this.getProject(projectId);
+
+    const { members, total } = await this.projectRepository.listMembers(projectId, {
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return {
+      items: members.map(toProjectMemberView),
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async addMember(projectId: string, email: string): Promise<ProjectMemberView> {
+    await this.getProject(projectId);
+
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) {
+      throw new NotFoundError(USER_MESSAGES.NOT_FOUND);
+    }
+
+    const member = await this.projectRepository.addMember(projectId, user.id);
+    return toProjectMemberView(member);
+  }
+
+  async removeMember(projectId: string, userId: string): Promise<void> {
+    await this.getProject(projectId);
+    await this.projectRepository.removeMember(projectId, userId);
   }
 }

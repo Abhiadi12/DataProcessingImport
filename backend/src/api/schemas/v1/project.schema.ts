@@ -1,12 +1,11 @@
 import { z } from "zod";
 import {
-  DEFAULT_PAGE,
-  DEFAULT_PAGE_SIZE,
-  MAX_PAGE_SIZE,
+  EMAIL_MAX_LENGTH,
   PROJECT_DESCRIPTION_MAX_LENGTH,
   PROJECT_NAME_MAX_LENGTH,
   VALIDATION_MESSAGES,
 } from "../../../constants/index.js";
+import { paginationQuerySchema } from "./pagination.schema.js";
 
 export const createProjectSchema = z.object({
   name: z.string().trim().min(1).max(PROJECT_NAME_MAX_LENGTH),
@@ -22,10 +21,8 @@ export const updateProjectSchema = z
     message: VALIDATION_MESSAGES.PROVIDE_NAME_OR_DESCRIPTION,
   });
 
-export const listProjectsQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).default(DEFAULT_PAGE),
-  limit: z.coerce.number().int().min(1).max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
-});
+// Same page/limit rules as every other list endpoint.
+export const listProjectsQuerySchema = paginationQuerySchema;
 
 export const projectIdParamSchema = z.object({
   id: z.string().uuid(),
@@ -33,3 +30,14 @@ export const projectIdParamSchema = z.object({
 
 export type ListProjectsQuery = z.infer<typeof listProjectsQuerySchema>;
 export type ProjectIdParam = z.infer<typeof projectIdParamSchema>;
+
+export const addProjectMemberSchema = z.object({
+  email: z.string().trim().toLowerCase().email().max(EMAIL_MAX_LENGTH),
+});
+
+export const projectMemberParamsSchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string().uuid(),
+});
+
+export type ProjectMemberParams = z.infer<typeof projectMemberParamsSchema>;

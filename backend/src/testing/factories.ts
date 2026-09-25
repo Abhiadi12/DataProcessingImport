@@ -1,8 +1,12 @@
-import type { RefreshToken, User } from "@prisma/client";
+import type { Project, RefreshToken, User } from "@prisma/client";
 import { vi } from "vitest";
+import type {
+  ProjectMemberWithUser,
+  ProjectRepository,
+} from "../repositories/v1/project.repository.js";
 import type { RefreshTokenRepository } from "../repositories/v1/refresh-token.repository.js";
 import type { UserRepository } from "../repositories/v1/user.repository.js";
-import { mockRefreshToken, mockUser } from "./mockData/index.js";
+import { mockProject, mockProjectMember, mockRefreshToken, mockUser } from "./mockData/index.js";
 
 export function buildUser(overrides: Partial<User> = {}): User {
   return { ...mockUser, ...overrides };
@@ -30,6 +34,37 @@ export function createFakeRefreshTokenRepository() {
     revokeFamily: vi.fn<RefreshTokenRepository["revokeFamily"]>(),
     revokeAllForUser: vi.fn<RefreshTokenRepository["revokeAllForUser"]>(),
   };
+}
+
+export function buildProject(overrides: Partial<Project> = {}): Project {
+  return { ...mockProject, ...overrides };
+}
+
+export function buildProjectMember(
+  overrides: Partial<ProjectMemberWithUser> = {},
+): ProjectMemberWithUser {
+  return { ...mockProjectMember, ...overrides };
+}
+
+export function createFakeProjectRepository() {
+  return {
+    create: vi.fn<ProjectRepository["create"]>(),
+    findById: vi.fn<ProjectRepository["findById"]>(),
+    list: vi.fn<ProjectRepository["list"]>(),
+    listForMember: vi.fn<ProjectRepository["listForMember"]>(),
+    isMember: vi.fn<ProjectRepository["isMember"]>(),
+    update: vi.fn<ProjectRepository["update"]>(),
+    delete: vi.fn<ProjectRepository["delete"]>(),
+    listMembers: vi.fn<ProjectRepository["listMembers"]>(),
+    addMember: vi.fn<ProjectRepository["addMember"]>(),
+    removeMember: vi.fn<ProjectRepository["removeMember"]>(),
+  };
+}
+
+export type FakeProjectRepository = ReturnType<typeof createFakeProjectRepository>;
+
+export function asProjectRepository(fake: FakeProjectRepository): ProjectRepository {
+  return fake as unknown as ProjectRepository;
 }
 
 export type FakeUserRepository = ReturnType<typeof createFakeUserRepository>;

@@ -15,5 +15,24 @@ services:
       timeout: 5s
       retries: 5
 
+  rustfs:
+    image: rustfs/rustfs:1.0.0
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      RUSTFS_CONSOLE_ENABLE: "true" # console is OFF by default
+      RUSTFS_REGION:
+    ports:
+      - "9000:9000" # S3 API — Express and the browser's presigned PUT target this
+      - "9001:9001" # web console — human access only, never used by the app
+    volumes:
+      - rustfs-data:/data
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -fsS http://localhost:9000/health || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres-data:
+  rustfs-data:

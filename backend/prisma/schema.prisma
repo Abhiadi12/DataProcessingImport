@@ -16,6 +16,7 @@ enum Role {
 }
 
 model User {
+  id            String          @id @default(uuid()) @db.Uuid
   email         String          @unique
   passwordHash  String          @map("password_hash")
   name          String
@@ -25,6 +26,8 @@ model User {
   updatedAt     DateTime        @updatedAt @map("updated_at")
   refreshTokens RefreshToken[]
   memberships   ProjectMember[]
+  importSchemas ImportSchema[]
+  imports       Import[]
 
   @@map("users")
 }
@@ -36,7 +39,10 @@ model Project {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  members ProjectMember[]
+  members       ProjectMember[]
+  importSchemas ImportSchema[]
+  imports       Import[]
+  records       ImportRecord[]
 
   @@map("projects")
 }
@@ -69,4 +75,122 @@ model RefreshToken {
   @@index([familyId])
   @@index([userId])
   @@map("refresh_tokens")
+}
+
+enum ImportStatus {
+  UPLOADING 
+  QUEUED 
+  PROCESSING 
+  COMPLETED
+  FAILED
+  CANCELLED
+
+  @@map("import_status")
+}
+
+
+enum ImportStage {
+  FILE_VALIDATION 
+  SCHEMA_VALIDATION 
+  IMPORTING 
+  REPORT_GENERATION 
+
+  @@map("import_stage")
+}
+
+model ImportSchema {
+  id          String    @id @default(uuid()) @db.Uuid
+  projectId   String?   @map("project_id") @db.Uuid 
+  createdById String    @map("created_by_id") @db.Uuid
+  name        String
+  description String?
+  fields      Json 
+  archivedAt  DateTime? @map("archived_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  project   Project?       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User           @relation(fields: [createdById], references: [id])
+  imports   Import[]
+  records   ImportRecord[]
+
+  
+  @@unique([projectId, name])
+  @@index([projectId])
+  @@map("import_schemas")
+}
+
+model Import {
+  id           String @id @default(uuid()) @db.Uuid
+  projectId    String @map("project_id") @db.Uuid
+  schemaId     String @map("schema_id") @db.Uuid
+  uploadedById String @map("uploaded_by_id") @db.Uuid
+
+  filename    String // the user's own name, e.g. customers.csv
+  objectKey   String @map("object_key") // project-<id>/import-<id>/original.csv
+  sizeBytes   BigInt @map("size_bytes")
+  contentType String @map("content_type")
+
+  status        ImportStatus @default(UPLOADING)
+  stage         ImportStage?
+  attempt       Int          @default(0)
+  failureReason String?      @map("failure_reason")
+
+  // Authoritative counters. Redis holds the hot values during processing; these
+  // are flushed periodically and definitively on terminal status.
+  totalRows      Int?   @map("total_rows") // null until COMPLETED — unknowable mid-stream
+  processedRows  Int    @default(0) @map("processed_rows")
+  successfulRows Int    @default(0) @map("successful_rows")
+  failedRows     Int    @default(0) @map("failed_rows")
+  duplicateRows  Int    @default(0) @map("duplicate_rows")
+  bytesRead      BigInt @default(0) @map("bytes_read") // progress % = bytesRead / sizeBytes
+
+  errorReportKey String? @map("error_report_key")
+
+  queuedAt    DateTime? @map("queued_at")
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  project    Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  schema     ImportSchema   @relation(fields: [schemaId], references: [id], onDelete: Cascade)
+  uploadedBy User           @relation(fields: [uploadedById], references: [id])
+  records    ImportRecord[]
+  errors     ImportError[]
+
+  @@index([projectId, createdAt(sort: Desc)]) // import history, newest first
+  @@index([status]) // dashboard "active imports"
+  @@map("imports")
+}
+
+model ImportRecord {
+  id         BigInt   @id @default(autoincrement())
+  projectId  String   @map("project_id") @db.Uuid
+  schemaId   String   @map("schema_id") @db.Uuid
+  importId   String   @map("import_id") @db.Uuid
+  data       Json // validated + transformed row (Json is already jsonb on PG)
+  dedupeHash Bytes    @map("dedupe_hash")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  project Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  schema  ImportSchema @relation(fields: [schemaId], references: [id], onDelete: Cascade)
+  import  Import       @relation(fields: [importId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, schemaId, dedupeHash])
+  @@index([importId])
+  @@map("imported_records")
+}
+
+model ImportError {
+  id        BigInt   @id @default(autoincrement())
+  importId  String   @map("import_id") @db.Uuid
+  rowNumber Int      @map("row_number")
+  rawRow    String   @map("raw_row") 
+  errors    Json // [{ field, message }]
+  createdAt DateTime @default(now()) @map("created_at")
+
+  import Import @relation(fields: [importId], references: [id], onDelete: Cascade)
+
+  @@index([importId, rowNumber])
+  @@map("import_errors")
 }

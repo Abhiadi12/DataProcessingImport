@@ -23,7 +23,21 @@ const envSchema = z.object({
     .enum(["true", "false"])
     .default("true")
     .transform((value) => value === "true"),
-  // Optional: only the seed script reads these, so the app still boots without them.
+  S3_ENDPOINT: z.string().url(),
+  S3_REGION: z.string().min(1).default("ap-south-1"),
+  S3_ACCESS_KEY: z.string().min(1),
+  S3_SECRET_KEY: z.string().min(1),
+  S3_BUCKET: z.string().min(1),
+  S3_FORCE_PATH_STYLE: z
+    .enum(["true", "false"])
+    .default("true")
+    .transform((value) => value === "true"),
+  PRESIGN_EXPIRY_SECONDS: z.coerce.number().int().positive().default(900),
+  MAX_UPLOAD_BYTES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(2 * 1024 * 1024 * 1024),
   SEED_ADMIN_EMAIL: z.string().trim().toLowerCase().email().optional(),
   SEED_ADMIN_PASSWORD: z.string().min(PASSWORD_MIN_LENGTH).optional(),
 });

@@ -1,6 +1,6 @@
 import { Role } from "@prisma/client";
 import { Router } from "express";
-import { v1ProjectController } from "../../controllers/index.js";
+import { v1ImportSchemaController, v1ProjectController } from "../../controllers/index.js";
 import { authenticate } from "../../middlewares/authenticate.middleware.js";
 import { requireProjectAccess } from "../../middlewares/require-project-access.middleware.js";
 import { requireRole } from "../../middlewares/require-role.middleware.js";
@@ -13,6 +13,10 @@ import {
   addProjectMemberSchema,
   projectMemberParamsSchema,
 } from "../../schemas/v1/project.schema.js";
+import {
+  createImportSchemaSchema,
+  listImportSchemasQuerySchema,
+} from "../../schemas/v1/import-schema.schema.js";
 
 export const projectRouter = Router();
 
@@ -81,4 +85,27 @@ projectRouter.delete(
   requireProjectAccess(),
   requireRole(Role.MANAGER),
   v1ProjectController.removeProjectMember,
+);
+
+// Import schemas that belong to a project. Nested here so requireProjectAccess
+// can read the projectId from the path — it expects the param to be named `id`.
+//
+// Any member may LIST (they have to pick one when uploading); only a MANAGER who
+// belongs to the project may CREATE, because a schema is shared, immutable, and
+// defines the dedupe key for everyone's data.
+projectRouter.get(
+  "/:id/import-schemas",
+  authenticate,
+  validate({ params: projectIdParamSchema, query: listImportSchemasQuerySchema }),
+  requireProjectAccess(),
+  v1ImportSchemaController.listProjectImportSchemas,
+);
+
+projectRouter.post(
+  "/:id/import-schemas",
+  authenticate,
+  validate({ params: projectIdParamSchema, body: createImportSchemaSchema }),
+  requireProjectAccess(),
+  requireRole(Role.MANAGER),
+  v1ImportSchemaController.createProjectImportSchema,
 );

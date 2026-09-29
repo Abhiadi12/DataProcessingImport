@@ -12,3 +12,9 @@ export const MAX_PAGE_SIZE = 100;
 
 export const PROJECT_NAME_MAX_LENGTH = 120;
 export const PROJECT_DESCRIPTION_MAX_LENGTH = 500;
+
+export const SCHEMA_NAME_MAX_LENGTH = 120;
+export const SCHEMA_DESCRIPTION_MAX_LENGTH = 500;
+
+export const SCHEMA_FIELD_NAME_MAX_LENGTH = 64;
+export const SCHEMA_MAX_FIELDS = 100;

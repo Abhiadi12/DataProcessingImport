@@ -72,6 +72,28 @@ export const COMMON_MESSAGES = {
   noRouteFor: (method: string, path: string) => `No route for ${method} ${path}`,
 } as const;
 
+export const IMPORT_SCHEMA_MESSAGES = {
+  NOT_FOUND: "Import schema not found",
+  CREATED: "Import schema created",
+  FETCHED: "Import schema fetched",
+  LIST_FETCHED: "Import schemas fetched",
+  ARCHIVED: "Import schema archived",
+  NAME_TAKEN: "An import schema with that name already exists in this project",
+  GLOBAL_NAME_TAKEN: "A global import schema with that name already exists",
+  ALREADY_ARCHIVED: "That import schema is already archived",
+  IN_USE: "That import schema has imports and cannot be archived",
+  GLOBAL_REQUIRES_ADMIN: "Only an admin can manage global import schemas",
+  NEEDS_AT_LEAST_ONE_FIELD: "Define at least one field",
+  TOO_MANY_FIELDS: "Too many fields in one schema",
+  NEEDS_UNIQUE_FIELD:
+    "Mark at least one field unique — it identifies a record, and duplicate detection and retry idempotency both depend on it",
+  UNIQUE_MUST_BE_REQUIRED:
+    "A unique field must also be required: a blank value cannot identify a record",
+  UNIQUE_TYPE_UNSUITABLE: "A boolean field cannot identify a record, so it cannot be unique",
+  INVALID_FIELD_NAME:
+    "Field names must start with a letter and contain only letters, numbers and underscores",
+} as const;
+
 export const STORAGE_MESSAGES = {
   BUCKET_ENSURE_FAILED: "Could not verify or create the storage bucket",
   PRESIGN_FAILED: "Could not generate a storage URL",

@@ -115,7 +115,6 @@ model ImportSchema {
 
   
   @@unique([projectId, name])
-  @@index([projectId])
   @@map("import_schemas")
 }
 
@@ -160,6 +159,8 @@ model Import {
 
   @@index([projectId, createdAt(sort: Desc)]) // import history, newest first
   @@index([status]) // dashboard "active imports"
+  @@index([schemaId]) 
+  @@index([uploadedById]) 
   @@map("imports")
 }
 

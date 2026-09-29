@@ -71,3 +71,11 @@ export const COMMON_MESSAGES = {
   HEALTHY: "ok",
   noRouteFor: (method: string, path: string) => `No route for ${method} ${path}`,
 } as const;
+
+export const STORAGE_MESSAGES = {
+  BUCKET_ENSURE_FAILED: "Could not verify or create the storage bucket",
+  PRESIGN_FAILED: "Could not generate a storage URL",
+  HEAD_FAILED: "Could not read object metadata from storage",
+  DELETE_FAILED: "Could not delete objects from storage",
+  LIST_FAILED: "Could not list objects in storage",
+} as const;

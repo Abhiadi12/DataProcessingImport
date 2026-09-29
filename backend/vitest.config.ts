@@ -13,6 +13,11 @@ export default defineConfig({
       DATABASE_URL: "postgresql://test:test@localhost:5432/test?schema=public",
       JWT_ACCESS_SECRET: "test-secret-that-is-at-least-32-characters-long",
       JWT_ACCESS_TTL_SECONDS: "900",
+      S3_ENDPOINT: "http://localhost:9000",
+      S3_REGION: "ap-south-1",
+      S3_ACCESS_KEY: "test-access-key",
+      S3_SECRET_KEY: "test-secret-key",
+      S3_BUCKET: "test-bucket",
     },
     restoreMocks: true,
     coverage: {

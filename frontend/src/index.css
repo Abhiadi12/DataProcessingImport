@@ -1,0 +1,3 @@
+/* Layer order (where MUI's `mui` layer sits) is declared in AppProviders, not
+   here — see the comment there for why. */
+@import "tailwindcss";

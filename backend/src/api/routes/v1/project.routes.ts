@@ -1,6 +1,10 @@
 import { Role } from "@prisma/client";
 import { Router } from "express";
-import { v1ImportSchemaController, v1ProjectController } from "../../controllers/index.js";
+import {
+  v1ImportController,
+  v1ImportSchemaController,
+  v1ProjectController,
+} from "../../controllers/index.js";
 import { authenticate } from "../../middlewares/authenticate.middleware.js";
 import { requireProjectAccess } from "../../middlewares/require-project-access.middleware.js";
 import { requireRole } from "../../middlewares/require-role.middleware.js";
@@ -17,6 +21,7 @@ import {
   createImportSchemaSchema,
   listImportSchemasQuerySchema,
 } from "../../schemas/v1/import-schema.schema.js";
+import { createImportSchema } from "../../schemas/v1/import.schema.js";
 
 export const projectRouter = Router();
 
@@ -108,4 +113,14 @@ projectRouter.post(
   requireProjectAccess(),
   requireRole(Role.MANAGER),
   v1ImportSchemaController.createProjectImportSchema,
+);
+
+// Step 1 of the upload. Nested so requireProjectAccess can read the projectId
+// from the path. No requireRole: any member of the project may upload.
+projectRouter.post(
+  "/:id/imports",
+  authenticate,
+  validate({ params: projectIdParamSchema, body: createImportSchema }),
+  requireProjectAccess(),
+  v1ImportController.prepareUpload,
 );

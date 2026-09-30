@@ -72,6 +72,25 @@ export const COMMON_MESSAGES = {
   noRouteFor: (method: string, path: string) => `No route for ${method} ${path}`,
 } as const;
 
+export const IMPORT_MESSAGES = {
+  NOT_FOUND: "Import not found",
+  CREATED: "Upload prepared",
+  STARTED: "Import queued for processing",
+  SCHEMA_NOT_FOUND: "That import schema does not exist",
+  SCHEMA_ARCHIVED: "That import schema is archived and cannot be used for new imports",
+  SCHEMA_NOT_VISIBLE: "That import schema does not belong to this project",
+  FILE_TOO_LARGE: "File is larger than the maximum upload size",
+  UNSUPPORTED_EXTENSION: "Only .csv files are supported",
+  UNSUPPORTED_CONTENT_TYPE: "That content type is not valid for a .csv file",
+  // start() guards. Deliberately distinct messages: "you never uploaded" and
+  // "you uploaded something else" are different mistakes.
+  NOT_AWAITING_UPLOAD: "This import is not awaiting an upload",
+  OBJECT_MISSING: "No uploaded file was found for this import",
+  sizeMismatch: (declared: number, actual: number) =>
+    `Uploaded file is ${actual} bytes but ${declared} was declared`,
+  ALREADY_STARTED: "This import has already been started",
+} as const;
+
 export const IMPORT_SCHEMA_MESSAGES = {
   NOT_FOUND: "Import schema not found",
   CREATED: "Import schema created",

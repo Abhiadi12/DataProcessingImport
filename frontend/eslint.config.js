@@ -45,5 +45,13 @@ export default defineConfig([
     files: ["src/**/*.tsx"],
     rules: { "no-restricted-syntax": ["error", ...noInlineCopy] },
   },
+  {
+    // Test fixtures render throwaway markup and export helpers, not app UI.
+    files: ["src/**/*.test.{ts,tsx}", "src/testing/**"],
+    rules: {
+      "no-restricted-syntax": "off",
+      "react-refresh/only-export-components": "off",
+    },
+  },
   eslintConfigPrettier,
 ]);

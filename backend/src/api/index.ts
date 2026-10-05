@@ -10,6 +10,7 @@ import { container } from "../container.js";
 // the same reasoning as env.ts exiting on bad config.
 async function bootstrap(): Promise<void> {
   await container.storageService.ensureBucket();
+  await container.queueConnection.connect();
 
   const app = createApp();
 
@@ -20,10 +21,14 @@ async function bootstrap(): Promise<void> {
   function shutdown(signal: string): void {
     logger.info({ signal }, "Shutting down API server");
     server.close(() => {
-      void container.prisma.$disconnect().then(() => {
-        container.s3.destroy();
-        process.exit(0);
-      });
+      void container.queueConnection
+        .close()
+        .catch((error: unknown) => logger.error({ err: error }, "Error closing AMQP"))
+        .then(() => container.prisma.$disconnect())
+        .then(() => {
+          container.s3.destroy();
+          process.exit(0);
+        });
     });
   }
 

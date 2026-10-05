@@ -1,7 +1,7 @@
 import type { ImportSchema } from "@prisma/client";
-import type { FieldsDefinition } from "../../api/schemas/v1/import-schema.schema.js";
+import type { FieldsDefinition } from "./import-schema.definition.js";
 import type { ImportSchemaWithCounts } from "../../repositories/v1/import-schema.repository.js";
-import { uniqueFieldNames } from "../../api/schemas/v1/import-schema.schema.js";
+import { uniqueFieldNames } from "./import-schema.definition.js";
 
 export interface ImportSchemaView {
   id: string;

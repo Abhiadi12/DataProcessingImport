@@ -88,6 +88,12 @@ export const IMPORT_MESSAGES = {
   OBJECT_MISSING: "No uploaded file was found for this import",
   sizeMismatch: (declared: number, actual: number) =>
     `Uploaded file is ${actual} bytes but ${declared} was declared`,
+  FILE_EMPTY: "The uploaded file is empty",
+  OBJECT_VANISHED: "The uploaded file is no longer in storage",
+  NO_HEADER_ROW: "The file has no header row",
+  missingColumns: (names: string[]) =>
+    `The file is missing required column(s): ${names.join(", ")}`,
+  COMPLETED: "Import completed",
   ALREADY_STARTED: "This import has already been started",
 } as const;
 
@@ -119,4 +125,6 @@ export const STORAGE_MESSAGES = {
   HEAD_FAILED: "Could not read object metadata from storage",
   DELETE_FAILED: "Could not delete objects from storage",
   LIST_FAILED: "Could not list objects in storage",
+  GET_FAILED: "Could not read the object from storage",
+  UPLOAD_FAILED: "Could not upload to storage",
 } as const;

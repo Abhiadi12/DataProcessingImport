@@ -25,7 +25,7 @@ export async function startImport(req: Request, res: Response, next: NextFunctio
   try {
     if (!req.user) throw new UnauthorizedError(AUTH_MESSAGES.NOT_AUTHENTICATED);
     const { id } = req.validatedParams as ImportIdParam;
-    const record = await container.importService.start(req.user, id);
+    const record = await container.importService.start(req.user, id, req.requestId);
     // 202: the work is accepted but not done. A worker picks it up from the queue.
     res.status(202).json(ok(IMPORT_MESSAGES.STARTED, record));
   } catch (error) {

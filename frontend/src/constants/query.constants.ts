@@ -11,6 +11,11 @@ export const QUERY_KEYS = {
   PROJECTS_LIST: ["projects", "list"],
   PROJECT_DETAIL: ["projects", "detail"],
   PROJECT_MEMBERS: ["projects", "members"],
+  // A global schema shows up in every project's list, so schema changes
+  // invalidate IMPORT_SCHEMAS_ALL rather than one project's list.
+  IMPORT_SCHEMAS_ALL: ["import-schemas"],
+  IMPORT_SCHEMAS_LIST: ["import-schemas", "list"],
+  IMPORT_SCHEMA_DETAIL: ["import-schemas", "detail"],
 } as const;
 
 export const QUERY_DEFAULTS = {

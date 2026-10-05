@@ -7,4 +7,5 @@ export * from "./pagination.constants";
 export * from "./query.constants";
 export * from "./role.constants";
 export * from "./routes.constants";
+export * from "./schema.constants";
 export * from "./validation.constants";

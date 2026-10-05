@@ -1,6 +1,7 @@
 import type { TextFieldProps } from "@mui/material/TextField";
 import type { ReactNode } from "react";
 import type { Project } from "./project.types";
+import type { FieldsDefinition } from "./schema.types";
 import type { PublicUser, Role, UpdateUserInput } from "./user.types";
 
 export interface AppProvidersProps {
@@ -117,7 +118,31 @@ export interface AddMemberFormProps {
 
 export interface NonMemberProjectViewProps {
   projectId: string;
-  // The 403 from the project detail request, shown if there is nothing else
-  // to show.
   error: unknown;
+}
+
+export interface SchemasPanelProps {
+  projectId: string;
+  canManage: boolean;
+}
+
+export interface SchemaFormDialogProps {
+  open: boolean;
+  projectId: string;
+  onClose: () => void;
+}
+
+export interface SchemaDetailsDialogProps {
+  schemaId: string | null;
+  onClose: () => void;
+}
+
+export interface SchemaFieldsTableProps {
+  fields: FieldsDefinition;
+}
+
+export interface SchemaFieldRowProps {
+  index: number;
+  canRemove: boolean;
+  onRemove: () => void;
 }

@@ -13,6 +13,7 @@ import { MembersPanel } from "@/components/project/MembersPanel";
 import { NonMemberProjectView } from "@/components/project/NonMemberProjectView";
 import { ProjectFormDialog } from "@/components/project/ProjectFormDialog";
 import { ProjectLoadError } from "@/components/project/ProjectLoadError";
+import { SchemasPanel } from "@/components/schema/SchemasPanel";
 import {
   COMMON_MESSAGES,
   HTTP_STATUS,
@@ -29,14 +30,10 @@ import type { Project } from "@/types";
 import { getApiErrorStatus } from "@/utils/api-error";
 import { hasRole } from "@/utils/role";
 
+// placeholder is only for tabs that have no real panel yet.
 const TABS = [
-  // Members has a real panel; placeholder is unused for it.
   { value: PROJECT_TABS.MEMBERS, label: PROJECTS_MESSAGES.TAB_MEMBERS, placeholder: "" },
-  {
-    value: PROJECT_TABS.SCHEMAS,
-    label: PROJECTS_MESSAGES.TAB_SCHEMAS,
-    placeholder: PROJECTS_MESSAGES.SCHEMAS_PLACEHOLDER,
-  },
+  { value: PROJECT_TABS.SCHEMAS, label: PROJECTS_MESSAGES.TAB_SCHEMAS, placeholder: "" },
   {
     value: PROJECT_TABS.IMPORTS,
     label: PROJECTS_MESSAGES.TAB_IMPORTS,
@@ -129,9 +126,13 @@ export function ProjectDetailPage() {
         </Tabs>
 
         <div role="tabpanel">
-          {activeTab.value === PROJECT_TABS.MEMBERS ? (
+          {activeTab.value === PROJECT_TABS.MEMBERS && (
             <MembersPanel projectId={project.id} canManage={canManage} />
-          ) : (
+          )}
+          {activeTab.value === PROJECT_TABS.SCHEMAS && (
+            <SchemasPanel projectId={project.id} canManage={canManage} />
+          )}
+          {activeTab.value === PROJECT_TABS.IMPORTS && (
             <EmptyState title={activeTab.label} description={activeTab.placeholder} />
           )}
         </div>

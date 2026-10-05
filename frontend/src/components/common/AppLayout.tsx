@@ -27,6 +27,11 @@ export function AppLayout() {
           >
             {APP_MESSAGES.NAME}
           </Typography>
+          {user && (
+            <Button component={NavLink} to={ROUTES.HOME} color="inherit">
+              {NAV_MESSAGES.PROJECTS}
+            </Button>
+          )}
           {user?.role === ROLE.ADMIN && (
             <Button component={NavLink} to={ROUTES.USERS} color="inherit">
               {NAV_MESSAGES.USERS}

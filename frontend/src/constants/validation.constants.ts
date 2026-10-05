@@ -5,3 +5,6 @@ export const PASSWORD_MAX_LENGTH = 24;
 
 export const NAME_MAX_LENGTH = 100;
 export const EMAIL_MAX_LENGTH = 254;
+
+export const PROJECT_NAME_MAX_LENGTH = 120;
+export const PROJECT_DESCRIPTION_MAX_LENGTH = 500;

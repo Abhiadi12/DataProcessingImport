@@ -29,6 +29,13 @@ export const API_ENDPOINTS = {
     byId: (id: string) => `/projects/${id}`,
     members: (id: string) => `/projects/${id}/members`,
     member: (id: string, userId: string) => `/projects/${id}/members/${userId}`,
+    // A project's own schemas plus every global one.
+    importSchemas: (id: string) => `/projects/${id}/import-schemas`,
+  },
+  IMPORT_SCHEMAS: {
+    // POST here creates a GLOBAL schema (admin only).
+    GLOBAL: "/import-schemas",
+    byId: (id: string) => `/import-schemas/${id}`,
   },
 } as const;
 

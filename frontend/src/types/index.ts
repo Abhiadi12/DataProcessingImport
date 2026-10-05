@@ -5,5 +5,6 @@ export type * from "./health.types";
 export type * from "./notification.types";
 export type * from "./project.types";
 export type * from "./route.types";
+export type * from "./schema.types";
 export type * from "./store.types";
 export type * from "./user.types";

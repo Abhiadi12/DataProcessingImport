@@ -1,4 +1,10 @@
-import type { Role } from "@/types";
+import type { FieldType, Role } from "@/types";
+import {
+  SCHEMA_DESCRIPTION_MAX_LENGTH,
+  SCHEMA_FIELD_NAME_MAX_LENGTH,
+  SCHEMA_MAX_FIELDS,
+  SCHEMA_NAME_MAX_LENGTH,
+} from "./schema.constants";
 import {
   NAME_MAX_LENGTH,
   PASSWORD_MAX_LENGTH,
@@ -81,6 +87,19 @@ export const VALIDATION_MESSAGES = {
   PASSWORDS_DO_NOT_MATCH: "Passwords do not match",
   CURRENT_PASSWORD_REQUIRED: "Current password is required",
   NEW_PASSWORD_MUST_DIFFER: "New password must be different from the current password",
+  SCHEMA_NAME_REQUIRED: "Schema name is required",
+  SCHEMA_NAME_TOO_LONG: `Schema name must be at most ${SCHEMA_NAME_MAX_LENGTH} characters`,
+  SCHEMA_DESCRIPTION_TOO_LONG: `Description must be at most ${SCHEMA_DESCRIPTION_MAX_LENGTH} characters`,
+  FIELD_NAME_REQUIRED: "Field name is required",
+  FIELD_NAME_TOO_LONG: `Field name must be at most ${SCHEMA_FIELD_NAME_MAX_LENGTH} characters`,
+  FIELD_NAME_INVALID: "Start with a letter; use only letters, numbers and underscores",
+  FIELD_NAME_DUPLICATE: "Another field already has this name",
+  SCHEMA_NEEDS_FIELD: "Add at least one field",
+  SCHEMA_TOO_MANY_FIELDS: `A schema can have at most ${SCHEMA_MAX_FIELDS} fields`,
+  SCHEMA_NEEDS_UNIQUE_FIELD:
+    "Mark at least one field as unique. It identifies a record, so duplicates can be detected.",
+  UNIQUE_MUST_BE_REQUIRED: "A unique field must also be required",
+  UNIQUE_CANNOT_BE_BOOLEAN: "A boolean field cannot be unique",
   PROJECT_NAME_REQUIRED: "Project name is required",
   PROJECT_NAME_TOO_LONG: `Project name must be at most ${PROJECT_NAME_MAX_LENGTH} characters`,
   PROJECT_DESCRIPTION_TOO_LONG: `Description must be at most ${PROJECT_DESCRIPTION_MAX_LENGTH} characters`,
@@ -157,7 +176,6 @@ export const PROJECTS_MESSAGES = {
   TAB_MEMBERS: "Members",
   TAB_SCHEMAS: "Schemas",
   TAB_IMPORTS: "Imports",
-  SCHEMAS_PLACEHOLDER: "Import schemas for this project are coming next.",
   IMPORTS_PLACEHOLDER: "File uploads and import history are coming next.",
   FORBIDDEN_TITLE: "You are not a member of this project",
   FORBIDDEN_DESCRIPTION:
@@ -186,6 +204,60 @@ export const MEMBERS_MESSAGES = {
   removeLabel: (name: string) => `Remove ${name} from this project`,
   removeWarning: (name: string) => `${name} will lose access to this project and everything in it.`,
   removeSelfWarning: "You will lose access to this project and everything in it.",
+} as const;
+
+export const FIELD_TYPE_LABELS: Record<FieldType, string> = {
+  string: "Text",
+  number: "Number",
+  integer: "Whole number",
+  boolean: "Yes / No",
+  date: "Date",
+};
+
+export const SCHEMAS_MESSAGES = {
+  INTRO: "A schema describes the columns a file must have before it can be imported.",
+  NEW: "New schema",
+  EMPTY_TITLE: "No schemas yet",
+  EMPTY_FOR_MANAGER: "Create a schema to define which columns an imported file must contain.",
+  EMPTY_FOR_MEMBER: "A manager needs to create a schema before files can be imported.",
+  COLUMN_NAME: "Name",
+  COLUMN_FIELDS: "Fields",
+  COLUMN_UNIQUE: "Unique by",
+  COLUMN_CREATED: "Created",
+  GLOBAL: "Global",
+  ARCHIVED: "Archived",
+  DETAILS_TITLE: "Schema details",
+  DESCRIPTION: "Description",
+  NO_DESCRIPTION: "No description",
+  SCOPE: "Available in",
+  SCOPE_GLOBAL: "Every project",
+  SCOPE_PROJECT: "This project only",
+  IMPORTS_USING: "Imports using it",
+  FIELDS_TITLE: "Fields",
+  FIELD_NAME: "Field name",
+  FIELD_TYPE: "Type",
+  FIELD_REQUIRED: "Required",
+  FIELD_UNIQUE: "Unique",
+  YES: "Yes",
+  NO: "No",
+  CREATE_TITLE: "New import schema",
+  CREATE_SUBMIT: "Create schema",
+  IMMUTABLE_NOTICE:
+    "A schema cannot be edited after it is created. To change one, archive it and create a new one.",
+  NAME_LABEL: "Schema name",
+  DESCRIPTION_LABEL: "Description (optional)",
+  GLOBAL_LABEL: "Make this a global schema",
+  GLOBAL_HINT:
+    "Global schemas can be used in every project. Only admins can create or archive them.",
+  ADD_FIELD: "Add field",
+  ARCHIVE_TITLE: "Archive this schema?",
+  ARCHIVE_CONFIRM: "Archive",
+  fieldNumber: (position: number) => `Field ${position}`,
+  removeField: (position: number) => `Remove field ${position}`,
+  viewDetailsOf: (name: string) => `View details of ${name}`,
+  archiveLabel: (name: string) => `Archive ${name}`,
+  archiveWarning: (name: string) =>
+    `"${name}" will no longer be available for new imports. This cannot be undone.`,
 } as const;
 
 export const NOT_FOUND_MESSAGES = {

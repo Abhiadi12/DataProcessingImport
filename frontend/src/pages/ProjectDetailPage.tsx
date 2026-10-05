@@ -9,10 +9,13 @@ import { Link as RouterLink, useNavigate, useParams, useSearchParams } from "rea
 import { EmptyState } from "@/components/common/EmptyState";
 import { PageLoader } from "@/components/common/PageLoader";
 import { DeleteProjectDialog } from "@/components/project/DeleteProjectDialog";
+import { MembersPanel } from "@/components/project/MembersPanel";
+import { NonMemberProjectView } from "@/components/project/NonMemberProjectView";
 import { ProjectFormDialog } from "@/components/project/ProjectFormDialog";
 import { ProjectLoadError } from "@/components/project/ProjectLoadError";
 import {
   COMMON_MESSAGES,
+  HTTP_STATUS,
   PROJECT_TAB_PARAM,
   PROJECT_TABS,
   PROJECTS_MESSAGES,
@@ -23,14 +26,12 @@ import { useAppSelector } from "@/hooks/redux.hooks";
 import { useGetProject } from "@/service/project.service";
 import { selectCurrentUser } from "@/store/slices/auth.slice";
 import type { Project } from "@/types";
+import { getApiErrorStatus } from "@/utils/api-error";
 import { hasRole } from "@/utils/role";
 
 const TABS = [
-  {
-    value: PROJECT_TABS.MEMBERS,
-    label: PROJECTS_MESSAGES.TAB_MEMBERS,
-    placeholder: PROJECTS_MESSAGES.MEMBERS_PLACEHOLDER,
-  },
+  // Members has a real panel; placeholder is unused for it.
+  { value: PROJECT_TABS.MEMBERS, label: PROJECTS_MESSAGES.TAB_MEMBERS, placeholder: "" },
   {
     value: PROJECT_TABS.SCHEMAS,
     label: PROJECTS_MESSAGES.TAB_SCHEMAS,
@@ -62,13 +63,19 @@ export function ProjectDetailPage() {
     return <PageLoader />;
   }
 
+  const canManage = hasRole(user, ROLE.MANAGER);
+
   if (isError || !project) {
+    // A manager refused the project can still read its member list.
+    if (canManage && getApiErrorStatus(error) === HTTP_STATUS.FORBIDDEN) {
+      return <NonMemberProjectView projectId={id} error={error} />;
+    }
     return <ProjectLoadError error={error} />;
   }
 
   // Reaching this point means the API let this user open the project (member
-  // or admin), so the role alone decides whether they can edit or delete it.
-  const canManage = hasRole(user, ROLE.MANAGER);
+  // or admin), so the role alone (canManage) decides whether they can edit or
+  // delete it and change its members.
 
   return (
     <div className="flex flex-col gap-6">
@@ -122,7 +129,11 @@ export function ProjectDetailPage() {
         </Tabs>
 
         <div role="tabpanel">
-          <EmptyState title={activeTab.label} description={activeTab.placeholder} />
+          {activeTab.value === PROJECT_TABS.MEMBERS ? (
+            <MembersPanel projectId={project.id} canManage={canManage} />
+          ) : (
+            <EmptyState title={activeTab.label} description={activeTab.placeholder} />
+          )}
         </div>
       </Card>
 

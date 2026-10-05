@@ -157,7 +157,6 @@ export const PROJECTS_MESSAGES = {
   TAB_MEMBERS: "Members",
   TAB_SCHEMAS: "Schemas",
   TAB_IMPORTS: "Imports",
-  MEMBERS_PLACEHOLDER: "Member management for this project is coming next.",
   SCHEMAS_PLACEHOLDER: "Import schemas for this project are coming next.",
   IMPORTS_PLACEHOLDER: "File uploads and import history are coming next.",
   FORBIDDEN_TITLE: "You are not a member of this project",
@@ -170,6 +169,23 @@ export const PROJECTS_MESSAGES = {
   // Deleting cascades on the backend, so say exactly what goes with it.
   deleteWarning: (name: string) =>
     `"${name}" will be permanently deleted along with its members, schemas and imported data. This cannot be undone.`,
+} as const;
+
+export const MEMBERS_MESSAGES = {
+  ADD_LABEL: "Add a member by email",
+  ADD_SUBMIT: "Add member",
+  EMPTY: "This project has no members.",
+  COLUMN_JOINED: "Joined",
+  REMOVE_TITLE: "Remove this member?",
+  REMOVE_CONFIRM: "Remove",
+  VIEW_ONLY_TITLE: "Project members",
+  // A manager can read any project's member list, but only a member (or an
+  // admin) can open the project or change who is in it.
+  VIEW_ONLY_NOTICE:
+    "You are not a member of this project. As a manager you can see who is in it, but you cannot open the project or change its members.",
+  removeLabel: (name: string) => `Remove ${name} from this project`,
+  removeWarning: (name: string) => `${name} will lose access to this project and everything in it.`,
+  removeSelfWarning: "You will lose access to this project and everything in it.",
 } as const;
 
 export const NOT_FOUND_MESSAGES = {

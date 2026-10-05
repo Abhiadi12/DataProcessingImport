@@ -10,6 +10,7 @@ export const QUERY_KEYS = {
   PROJECTS_ALL: ["projects"],
   PROJECTS_LIST: ["projects", "list"],
   PROJECT_DETAIL: ["projects", "detail"],
+  PROJECT_MEMBERS: ["projects", "members"],
 } as const;
 
 export const QUERY_DEFAULTS = {

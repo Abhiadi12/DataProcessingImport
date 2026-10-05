@@ -4,7 +4,8 @@ import {
   PROJECT_NAME_MAX_LENGTH,
   VALIDATION_MESSAGES,
 } from "@/constants";
-import type { ProjectFormValues } from "@/types";
+import type { AddMemberFormValues, ProjectFormValues } from "@/types";
+import { emailSchema } from "./auth.validation";
 
 export const projectSchema = z.object({
   name: z
@@ -17,3 +18,7 @@ export const projectSchema = z.object({
     .trim()
     .max(PROJECT_DESCRIPTION_MAX_LENGTH, VALIDATION_MESSAGES.PROJECT_DESCRIPTION_TOO_LONG),
 }) satisfies z.ZodType<ProjectFormValues>;
+
+export const addMemberSchema = z.object({
+  email: emailSchema,
+}) satisfies z.ZodType<AddMemberFormValues>;

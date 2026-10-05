@@ -27,6 +27,8 @@ export const API_ENDPOINTS = {
   PROJECTS: {
     LIST: "/projects",
     byId: (id: string) => `/projects/${id}`,
+    members: (id: string) => `/projects/${id}/members`,
+    member: (id: string, userId: string) => `/projects/${id}/members/${userId}`,
   },
 } as const;
 

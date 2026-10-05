@@ -2,11 +2,14 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { API_ENDPOINTS, DEFAULT_PAGE_SIZE, QUERY_KEYS } from "@/constants";
 import { useAxios } from "@/hooks/useAxios";
 import type {
+  AddMemberVariables,
   ApiResponse,
   CreateProjectInput,
   PaginatedData,
   PaginationParams,
   Project,
+  ProjectMember,
+  RemoveMemberVariables,
   UpdateProjectVariables,
 } from "@/types";
 
@@ -86,5 +89,65 @@ export const useDeleteProject = () => {
       queryClient.removeQueries({ queryKey: [...QUERY_KEYS.PROJECT_DETAIL, id] });
       return queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PROJECTS_LIST });
     },
+  });
+};
+
+// Readable by the project's members, by admins, and by ANY manager — even one
+// who is not a member and gets a 403 from useGetProject for the same project.
+// So this must not be gated on the project detail having loaded.
+export const useGetProjectMembers = (
+  projectId: string,
+  { page = 1, limit = DEFAULT_PAGE_SIZE }: PaginationParams = {},
+) => {
+  const axios = useAxios();
+
+  return useQuery({
+    queryKey: [...QUERY_KEYS.PROJECT_MEMBERS, projectId, page, limit],
+    queryFn: async () => {
+      const res = await axios.get<ApiResponse<PaginatedData<ProjectMember>>>(
+        API_ENDPOINTS.PROJECTS.members(projectId),
+        { params: { page, limit } },
+      );
+      return res.data;
+    },
+    placeholderData: keepPreviousData,
+  });
+};
+
+// A manager who is a member, or an admin. The user must already be registered.
+export const useAddProjectMember = () => {
+  const axios = useAxios();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ projectId, email }: AddMemberVariables) => {
+      const res = await axios.post<ApiResponse<ProjectMember>>(
+        API_ENDPOINTS.PROJECTS.members(projectId),
+        { email },
+      );
+      return res.data;
+    },
+    onSuccess: (_res, { projectId }) =>
+      queryClient.invalidateQueries({ queryKey: [...QUERY_KEYS.PROJECT_MEMBERS, projectId] }),
+  });
+};
+
+// A manager who is a member, or an admin. The API refuses to remove the last
+// member (409).
+export const useRemoveProjectMember = () => {
+  const axios = useAxios();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ projectId, userId }: RemoveMemberVariables) => {
+      const res = await axios.delete<ApiResponse<null>>(
+        API_ENDPOINTS.PROJECTS.member(projectId, userId),
+      );
+      return res.data;
+    },
+    // Everything under "projects", not just this member list: a user who
+    // removes themselves has also lost the project detail and their place in
+    // the projects list.
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PROJECTS_ALL }),
   });
 };

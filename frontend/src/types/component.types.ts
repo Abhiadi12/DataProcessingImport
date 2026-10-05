@@ -104,3 +104,20 @@ export interface DeleteProjectDialogProps {
 export interface ProjectLoadErrorProps {
   error: unknown;
 }
+
+export interface MembersPanelProps {
+  projectId: string;
+  // Add/remove controls. Needs MANAGER+ *and* access to the project.
+  canManage: boolean;
+}
+
+export interface AddMemberFormProps {
+  projectId: string;
+}
+
+export interface NonMemberProjectViewProps {
+  projectId: string;
+  // The 403 from the project detail request, shown if there is nothing else
+  // to show.
+  error: unknown;
+}

@@ -18,4 +18,38 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    files: ["src/worker/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/api/**", "express", "express/**", "cookie-parser", "pino-http"],
+              message:
+                "src/worker must not import src/api or any HTTP framework. Move shared code into services/, repositories/, constants/, queue/ or utils/.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/api/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/worker/**"],
+              message:
+                "src/api must not import src/worker. The two communicate through RabbitMQ only.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 );

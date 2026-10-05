@@ -1,4 +1,4 @@
-import { ImportStatus, Prisma, type Import, type PrismaClient } from "@prisma/client";
+import { ImportStage, ImportStatus, Prisma, type Import, type PrismaClient } from "@prisma/client";
 import { IMPORT_MESSAGES } from "../../constants/index.js";
 import { NotFoundError } from "../../errors/not-found.error.js";
 
@@ -46,6 +46,45 @@ export class ImportRepository {
     const { count } = await this.prisma.import.updateMany({
       where: { id, status: ImportStatus.UPLOADING },
       data: { status: ImportStatus.QUEUED, queuedAt: new Date() },
+    });
+    return count === 1;
+  }
+
+  /**
+   * Undo markQueued when publishing the job failed.
+   *
+   * Without this, a broker outage between the UPDATE and the publish would
+   * leave the row at QUEUED with no message in existence — permanently stuck,
+   * because `start()` refuses to run again on a non-UPLOADING import. Reverting
+   * makes the whole operation retryable.
+   */
+  async revertToUploading(id: string): Promise<void> {
+    await this.prisma.import.updateMany({
+      where: { id, status: ImportStatus.QUEUED },
+      data: { status: ImportStatus.UPLOADING, queuedAt: null },
+    });
+  }
+
+  /**
+   * QUEUED -> PROCESSING, conditionally. The worker's claim.
+   *
+   * RabbitMQ guarantees at-least-once delivery, so the same message WILL
+   * sometimes arrive twice (a redelivery after a worker died, for instance).
+   * Returning false here means someone else owns this import, or it was
+   * cancelled while queued — either way the delivery should be acked and
+   * dropped rather than processed.
+   *
+   * Must be a conditional UPDATE, not SELECT-then-UPDATE: two workers reading
+   * the status simultaneously would both see QUEUED and both proceed.
+   */
+  async claimForProcessing(id: string): Promise<boolean> {
+    const { count } = await this.prisma.import.updateMany({
+      where: { id, status: ImportStatus.QUEUED },
+      data: {
+        status: ImportStatus.PROCESSING,
+        stage: ImportStage.FILE_VALIDATION,
+        startedAt: new Date(),
+      },
     });
     return count === 1;
   }

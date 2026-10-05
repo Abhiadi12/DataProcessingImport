@@ -11,6 +11,7 @@ import { BadRequestError } from "../../errors/bad-request.error.js";
 import { ConflictError } from "../../errors/conflict.error.js";
 import { ForbiddenError } from "../../errors/forbidden.error.js";
 import { NotFoundError } from "../../errors/not-found.error.js";
+import type { ImportPublisher } from "../../queue/import-publisher.js";
 import type { ImportRepository } from "../../repositories/v1/import.repository.js";
 import type { ImportSchemaRepository } from "../../repositories/v1/import-schema.repository.js";
 import type { ProjectRepository } from "../../repositories/v1/project.repository.js";
@@ -27,6 +28,7 @@ export class ImportService {
     private readonly importSchemaRepository: ImportSchemaRepository,
     private readonly projectRepository: ProjectRepository,
     private readonly storageService: StorageService,
+    private readonly importPublisher: ImportPublisher,
   ) {}
 
   /**
@@ -92,7 +94,7 @@ export class ImportService {
    * job whose file doesn't exist, fail, retry, and end up in the DLQ — a
    * confusing failure for what is really a bad request.
    */
-  async start(user: AuthenticatedUser, importId: string): Promise<ImportView> {
+  async start(user: AuthenticatedUser, importId: string, requestId: string): Promise<ImportView> {
     const record = await this.requireAccessibleImport(user, importId);
 
     if (record.status !== ImportStatus.UPLOADING) {
@@ -124,10 +126,20 @@ export class ImportService {
       throw new ConflictError(IMPORT_MESSAGES.ALREADY_STARTED);
     }
 
-    // TODO(Day 2): publish { importId, attempt: 1, requestId } to the
-    // `imports` exchange here. Until then the row sits at QUEUED with no
-    // consumer, which is the correct intermediate state.
-    logger.info({ importId, objectKey: record.objectKey }, "Import queued");
+    // Publish AFTER the conditional update, never before: if markQueued lost
+    // the race there must be no message. The reverse order would also race —
+    // a worker could consume the message and find the row still UPLOADING.
+    try {
+      await this.importPublisher.publish({ importId, attempt: 1, requestId });
+    } catch (error) {
+      // The row says QUEUED but no message exists, so nothing would ever pick
+      // it up and start() refuses to re-run on a non-UPLOADING import. Put it
+      // back so the caller can simply try again.
+      await this.importRepository.revertToUploading(importId);
+      throw error;
+    }
+
+    logger.info({ importId, objectKey: record.objectKey, requestId }, "Import queued");
 
     const queued = await this.importRepository.findById(importId);
     if (!queued) throw new NotFoundError(IMPORT_MESSAGES.NOT_FOUND);

@@ -1,6 +1,8 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import { PrismaClient } from "@prisma/client";
 import { env } from "./config/env.js";
+import { ImportPublisher } from "./queue/import-publisher.js";
+import { QueueConnection } from "./queue/connection.js";
 import { ImportRepository } from "./repositories/v1/import.repository.js";
 import { ImportSchemaRepository } from "./repositories/v1/import-schema.repository.js";
 import { ProjectRepository } from "./repositories/v1/project.repository.js";
@@ -33,6 +35,9 @@ const projectRepository = new ProjectRepository(prisma);
 const importSchemaRepository = new ImportSchemaRepository(prisma);
 const importRepository = new ImportRepository(prisma);
 
+const queueConnection = new QueueConnection();
+const importPublisher = new ImportPublisher(queueConnection);
+
 const authService = new AuthService(userRepository, refreshTokenRepository);
 const userService = new UserService(userRepository);
 const projectService = new ProjectService(projectRepository, userRepository);
@@ -43,6 +48,7 @@ const importService = new ImportService(
   importSchemaRepository,
   projectRepository,
   storageService,
+  importPublisher,
 );
 
 export const container = {
@@ -54,4 +60,7 @@ export const container = {
   storageService,
   importSchemaService,
   importService,
+  importRepository,
+  queueConnection,
+  importPublisher,
 };

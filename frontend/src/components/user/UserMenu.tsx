@@ -5,7 +5,8 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
-import { AUTH_MESSAGES } from "@/constants";
+import { Link as RouterLink } from "react-router";
+import { AUTH_MESSAGES, NAV_MESSAGES, ROUTES } from "@/constants";
 import { useAppSelector } from "@/hooks/redux.hooks";
 import { useNotify } from "@/hooks/useNotify";
 import { useLogout, useLogoutAll } from "@/service/auth.service";
@@ -32,12 +33,17 @@ export function UserMenu() {
     logout.mutate();
   };
 
-  const handleLogoutAll = () => {
+  // Awaited rather than using mutate()'s onSuccess: success clears the session
+  // and unmounts this menu, and React Query drops per-call callbacks of an
+  // unmounted component.
+  const handleLogoutAll = async () => {
     close();
-    logoutAll.mutate(undefined, {
-      onSuccess: () => notify.success(AUTH_MESSAGES.LOGGED_OUT_ALL),
-      onError: (error) => notify.error(getApiErrorMessage(error)),
-    });
+    try {
+      await logoutAll.mutateAsync();
+      notify.success(AUTH_MESSAGES.LOGGED_OUT_ALL);
+    } catch (error) {
+      notify.error(getApiErrorMessage(error));
+    }
   };
 
   return (
@@ -61,6 +67,10 @@ export function UserMenu() {
             {user.email}
           </Typography>
         </div>
+        <Divider />
+        <MenuItem component={RouterLink} to={ROUTES.PROFILE} onClick={close}>
+          {NAV_MESSAGES.PROFILE}
+        </MenuItem>
         <Divider />
         <MenuItem onClick={handleLogout}>{AUTH_MESSAGES.LOGOUT}</MenuItem>
         <MenuItem onClick={handleLogoutAll}>{AUTH_MESSAGES.LOGOUT_ALL}</MenuItem>

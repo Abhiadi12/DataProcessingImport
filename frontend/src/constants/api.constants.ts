@@ -20,6 +20,9 @@ export const API_ENDPOINTS = {
   },
   USERS: {
     ME: "/users/me",
+    MY_PASSWORD: "/users/me/password",
+    LIST: "/users",
+    byId: (id: string) => `/users/${id}`,
   },
 } as const;
 

@@ -40,8 +40,6 @@ export function UsersPage() {
     );
   };
 
-  // Promoting to admin can't be undone (the API refuses to demote an admin),
-  // so it is the one change that asks first.
   const handleUpdate = (user: PublicUser, input: UpdateUserInput) => {
     if (input.role === ROLE.ADMIN) {
       setPendingPromotion(user);
@@ -73,7 +71,6 @@ export function UsersPage() {
 
       {page && currentUser && (
         <Card>
-          {/* Shown while a different page is loading behind the current rows. */}
           {users.isFetching && <LinearProgress />}
           <UsersTable
             users={page.items}

@@ -21,7 +21,6 @@ export interface ChangePasswordInput {
   newPassword: string;
 }
 
-// confirmNewPassword exists only in the form; it is never sent to the API.
 export interface ChangePasswordFormValues extends ChangePasswordInput {
   confirmNewPassword: string;
 }

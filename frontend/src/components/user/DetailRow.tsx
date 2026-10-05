@@ -1,7 +1,6 @@
 import Typography from "@mui/material/Typography";
 import type { DetailRowProps } from "@/types";
 
-// One "label: value" line of a details list.
 export function DetailRow({ label, children }: DetailRowProps) {
   return (
     <div className="flex items-center justify-between gap-4 py-2">

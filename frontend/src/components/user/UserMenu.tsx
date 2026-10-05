@@ -33,9 +33,6 @@ export function UserMenu() {
     logout.mutate();
   };
 
-  // Awaited rather than using mutate()'s onSuccess: success clears the session
-  // and unmounts this menu, and React Query drops per-call callbacks of an
-  // unmounted component.
   const handleLogoutAll = async () => {
     close();
     try {

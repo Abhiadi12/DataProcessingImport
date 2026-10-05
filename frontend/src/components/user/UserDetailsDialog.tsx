@@ -13,8 +13,6 @@ import { formatDate } from "@/utils/format";
 import { DetailRow } from "./DetailRow";
 import { RoleChip } from "./RoleChip";
 
-// Open while userId is set. Fetches that one user (GET /users/:id) rather
-// than reusing the table row, so it always shows the server's current state.
 export function UserDetailsDialog({ userId, onClose }: UserDetailsDialogProps) {
   const { data, isPending, isError, error } = useGetUser(userId);
   const user = data?.data;

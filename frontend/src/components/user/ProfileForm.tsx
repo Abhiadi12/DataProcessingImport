@@ -28,7 +28,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
     updateProfile.mutate(values, {
       onSuccess: (res) => {
         notify.success(res.message);
-        // Make the saved values the new baseline, so Save disables again.
         if (res.data) {
           reset({ name: res.data.name, email: res.data.email });
         }

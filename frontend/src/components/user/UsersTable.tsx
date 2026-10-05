@@ -17,12 +17,6 @@ import { formatDate } from "@/utils/format";
 
 const ROLE_OPTIONS = Object.values(ROLE);
 
-// Presentational: it reports what the admin asked for through onUpdate and
-// leaves confirming and saving to the page.
-//
-// The disabled controls mirror the API's rules (it rejects these with 403
-// anyway): nobody can change their own role or status, and an admin cannot be
-// demoted.
 export function UsersTable({
   users,
   currentUserId,

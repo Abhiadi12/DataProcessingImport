@@ -41,3 +41,11 @@ export const WORKER_PREFETCH = 1;
 
 /** Rows per batch insert. See docs/PIPELINE_WALKTHROUGH.md. */
 export const IMPORT_BATCH_SIZE = 1000;
+
+export const COUNTER_FLUSH_EVERY_BATCHES = 10;
+
+/** Rows of the error sample kept in Postgres. The CSV in storage is complete. */
+export const IMPORT_ERROR_SAMPLE_LIMIT = 1000;
+
+/** Bytes of the file read to validate the header row before streaming it all. */
+export const HEADER_PROBE_BYTES = 64 * 1024;

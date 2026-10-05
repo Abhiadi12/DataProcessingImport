@@ -1,3 +1,5 @@
+import type { Readable } from "node:stream";
+import { Upload } from "@aws-sdk/lib-storage";
 import {
   CreateBucketCommand,
   DeleteObjectsCommand,
@@ -98,6 +100,96 @@ export class StorageService {
     } catch (error) {
       throw wrap(error, STORAGE_MESSAGES.PRESIGN_FAILED, { key, operation: "get" });
     }
+  }
+
+  /**
+   * Opens the object as a READ STREAM — the whole point of the pipeline.
+   *
+   * `GetObject` does not download the file. It returns as soon as the response
+   * headers arrive, and `.Body` is a Node Readable that yields the bytes in
+   * chunks (~64KB) as they come off the socket. A 2GB object therefore costs a
+   * few hundred KB of memory, not 2GB: each chunk is processed and discarded
+   * before the next is read.
+   *
+   * Contrast `.Body.transformToByteArray()` or `transformToString()`, which
+   * buffer the ENTIRE object in memory. Those are fine for a 2KB file and fatal
+   * here — a 2GB string is not even representable in V8.
+   *
+   * The caller must consume or destroy the stream. An abandoned stream holds a
+   * socket from the SDK's connection pool until it times out.
+   */
+  async getObjectStream(key: string): Promise<Readable> {
+    try {
+      const result = await this.s3.send(new GetObjectCommand({ Bucket: this.bucket, Key: key }));
+      if (!result.Body) {
+        throw new InternalError(STORAGE_MESSAGES.GET_FAILED, { key });
+      }
+      // In Node the SDK always gives a Readable here; the union in the types
+      // exists because the same client runs in browsers, where it's a
+      // ReadableStream instead.
+      return result.Body as Readable;
+    } catch (error) {
+      if (error instanceof InternalError) throw error;
+      throw wrap(error, STORAGE_MESSAGES.GET_FAILED, { key });
+    }
+  }
+
+  /**
+   * Reads only the first `length` bytes.
+   *
+   * Used by SCHEMA_VALIDATION to inspect the header row without transferring
+   * the rest of the file: a `Range` header makes S3 send just that slice. The
+   * last line of the result is almost certainly cut mid-row, so callers must
+   * discard it rather than parse it.
+   */
+  async getObjectRange(key: string, length: number): Promise<string> {
+    try {
+      const result = await this.s3.send(
+        new GetObjectCommand({ Bucket: this.bucket, Key: key, Range: `bytes=0-${length - 1}` }),
+      );
+      if (!result.Body) {
+        throw new InternalError(STORAGE_MESSAGES.GET_FAILED, { key });
+      }
+      // Safe to buffer: `length` is bounded by the caller (64KB).
+      return await (result.Body as Readable)
+        .setEncoding("utf8")
+        .toArray()
+        .then((p) => p.join(""));
+    } catch (error) {
+      if (error instanceof InternalError) throw error;
+      throw wrap(error, STORAGE_MESSAGES.GET_FAILED, { key });
+    }
+  }
+
+  /**
+   * Uploads from a WRITE STREAM whose total size is unknown in advance.
+   *
+   * This is why `@aws-sdk/lib-storage` is a dependency. A plain `PutObject`
+   * needs `Content-Length` up front, because S3 does not accept chunked
+   * transfer encoding — so you cannot hand it a stream you are still writing
+   * to. `Upload` solves that by buffering into `partSize` chunks and performing
+   * a multipart upload, completing it when the stream ends.
+   *
+   * The error report uses this: rows are written as they are found, so the file
+   * is never held in memory even when every row in a 5M-row file is invalid.
+   */
+  uploadStream(key: string, body: Readable, contentType: string): Promise<void> {
+    const upload = new Upload({
+      client: this.s3,
+      params: { Bucket: this.bucket, Key: key, Body: body, ContentType: contentType },
+      // 5MB is S3's minimum part size (except the last part).
+      partSize: 5 * 1024 * 1024,
+      queueSize: 1,
+    });
+
+    return upload
+      .done()
+      .then(() => {
+        logger.debug({ key }, "Stream uploaded");
+      })
+      .catch((error: unknown) => {
+        throw wrap(error, STORAGE_MESSAGES.UPLOAD_FAILED, { key });
+      });
   }
 
   async headObject(key: string): Promise<ObjectMetadata> {

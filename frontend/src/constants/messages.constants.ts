@@ -1,5 +1,11 @@
 import type { Role } from "@/types";
-import { NAME_MAX_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "./validation.constants";
+import {
+  NAME_MAX_LENGTH,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PROJECT_DESCRIPTION_MAX_LENGTH,
+  PROJECT_NAME_MAX_LENGTH,
+} from "./validation.constants";
 
 export const APP_MESSAGES = {
   NAME: "Data Import Platform",
@@ -14,6 +20,8 @@ export const COMMON_MESSAGES = {
   CLOSE: "Close",
   CANCEL: "Cancel",
   SAVE_CHANGES: "Save changes",
+  EDIT: "Edit",
+  DELETE: "Delete",
 } as const;
 
 export const ERROR_BOUNDARY_MESSAGES = {
@@ -27,11 +35,6 @@ export const HEALTH_MESSAGES = {
   CHECKING: "Checking API…",
   ONLINE: "API online",
   OFFLINE: "API unreachable",
-} as const;
-
-export const HOME_MESSAGES = {
-  TITLE: "Welcome",
-  DESCRIPTION: "Your projects and imports will appear here.",
 } as const;
 
 export const LOADER_MESSAGES = {
@@ -78,9 +81,13 @@ export const VALIDATION_MESSAGES = {
   PASSWORDS_DO_NOT_MATCH: "Passwords do not match",
   CURRENT_PASSWORD_REQUIRED: "Current password is required",
   NEW_PASSWORD_MUST_DIFFER: "New password must be different from the current password",
+  PROJECT_NAME_REQUIRED: "Project name is required",
+  PROJECT_NAME_TOO_LONG: `Project name must be at most ${PROJECT_NAME_MAX_LENGTH} characters`,
+  PROJECT_DESCRIPTION_TOO_LONG: `Description must be at most ${PROJECT_DESCRIPTION_MAX_LENGTH} characters`,
 } as const;
 
 export const NAV_MESSAGES = {
+  PROJECTS: "Projects",
   USERS: "Users",
   PROFILE: "Profile",
 } as const;
@@ -127,6 +134,58 @@ export const USERS_MESSAGES = {
   // Admins cannot be demoted by the API, so this cannot be undone from the UI.
   promoteWarning: (name: string) =>
     `${name} will get full access to every project and user. An admin cannot be changed back to a lower role.`,
+} as const;
+
+export const PROJECTS_MESSAGES = {
+  TITLE: "Projects",
+  SUBTITLE: "Workspaces where your team uploads and processes data files.",
+  NEW: "New project",
+  EMPTY_TITLE: "No projects yet",
+  EMPTY_FOR_MANAGER: "Create your first project to start importing data.",
+  EMPTY_FOR_MEMBER: "You have not been added to any project yet. Ask a manager to add you.",
+  PER_PAGE: "Projects per page",
+  NO_DESCRIPTION: "No description",
+  CREATED_ON: "Created",
+  FIELD_NAME: "Project name",
+  FIELD_DESCRIPTION: "Description (optional)",
+  CREATE_TITLE: "New project",
+  CREATE_SUBMIT: "Create project",
+  EDIT_TITLE: "Edit project",
+  DELETE_TITLE: "Delete this project?",
+  BACK_TO_LIST: "Back to projects",
+  TABS_LABEL: "Project sections",
+  TAB_MEMBERS: "Members",
+  TAB_SCHEMAS: "Schemas",
+  TAB_IMPORTS: "Imports",
+  SCHEMAS_PLACEHOLDER: "Import schemas for this project are coming next.",
+  IMPORTS_PLACEHOLDER: "File uploads and import history are coming next.",
+  FORBIDDEN_TITLE: "You are not a member of this project",
+  FORBIDDEN_DESCRIPTION:
+    "Only members can open a project. Ask one of its managers to add you, then try again.",
+  NOT_FOUND_TITLE: "Project not found",
+  NOT_FOUND_DESCRIPTION: "This project does not exist or has been deleted.",
+  ERROR_TITLE: "Could not load this project",
+  actionsFor: (name: string) => `Actions for ${name}`,
+  // Deleting cascades on the backend, so say exactly what goes with it.
+  deleteWarning: (name: string) =>
+    `"${name}" will be permanently deleted along with its members, schemas and imported data. This cannot be undone.`,
+} as const;
+
+export const MEMBERS_MESSAGES = {
+  ADD_LABEL: "Add a member by email",
+  ADD_SUBMIT: "Add member",
+  EMPTY: "This project has no members.",
+  COLUMN_JOINED: "Joined",
+  REMOVE_TITLE: "Remove this member?",
+  REMOVE_CONFIRM: "Remove",
+  VIEW_ONLY_TITLE: "Project members",
+  // A manager can read any project's member list, but only a member (or an
+  // admin) can open the project or change who is in it.
+  VIEW_ONLY_NOTICE:
+    "You are not a member of this project. As a manager you can see who is in it, but you cannot open the project or change its members.",
+  removeLabel: (name: string) => `Remove ${name} from this project`,
+  removeWarning: (name: string) => `${name} will lose access to this project and everything in it.`,
+  removeSelfWarning: "You will lose access to this project and everything in it.",
 } as const;
 
 export const NOT_FOUND_MESSAGES = {

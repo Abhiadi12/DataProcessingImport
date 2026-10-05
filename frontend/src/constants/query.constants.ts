@@ -6,6 +6,11 @@ export const QUERY_KEYS = {
   ME: ["users", "me"],
   USERS_LIST: ["users", "list"],
   USER_DETAIL: ["users", "detail"],
+  // Same idea for projects: PROJECTS_ALL covers the list and every detail.
+  PROJECTS_ALL: ["projects"],
+  PROJECTS_LIST: ["projects", "list"],
+  PROJECT_DETAIL: ["projects", "detail"],
+  PROJECT_MEMBERS: ["projects", "members"],
 } as const;
 
 export const QUERY_DEFAULTS = {

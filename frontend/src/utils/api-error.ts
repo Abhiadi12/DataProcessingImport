@@ -13,3 +13,9 @@ export function getApiErrorMessage(error: unknown): string {
   }
   return error.response.data?.message || COMMON_MESSAGES.UNKNOWN_ERROR;
 }
+
+// The HTTP status of a failed request, or null if it never got a response
+// (network error) or wasn't an API error at all.
+export function getApiErrorStatus(error: unknown): number | null {
+  return isAxiosError(error) ? (error.response?.status ?? null) : null;
+}

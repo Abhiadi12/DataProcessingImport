@@ -24,6 +24,12 @@ export const API_ENDPOINTS = {
     LIST: "/users",
     byId: (id: string) => `/users/${id}`,
   },
+  PROJECTS: {
+    LIST: "/projects",
+    byId: (id: string) => `/projects/${id}`,
+    members: (id: string) => `/projects/${id}/members`,
+    member: (id: string, userId: string) => `/projects/${id}/members/${userId}`,
+  },
 } as const;
 
 // A 401 from these means "bad credentials" or "no session", not "access token
@@ -37,4 +43,6 @@ export const NO_REFRESH_ENDPOINTS: readonly string[] = [
 
 export const HTTP_STATUS = {
   UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
 } as const;

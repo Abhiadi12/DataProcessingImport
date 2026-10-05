@@ -1,5 +1,6 @@
 import type { TextFieldProps } from "@mui/material/TextField";
 import type { ReactNode } from "react";
+import type { Project } from "./project.types";
 import type { PublicUser, Role, UpdateUserInput } from "./user.types";
 
 export interface AppProvidersProps {
@@ -41,6 +42,8 @@ export interface ConfirmDialogProps {
   title: string;
   description: string;
   confirmLabel: string;
+  // Red confirm button, for deletes.
+  destructive?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -66,4 +69,55 @@ export interface UserDetailsDialogProps {
 export interface DetailRowProps {
   label: string;
   children: ReactNode;
+}
+
+export interface EmptyStateProps {
+  title: string;
+  description: string;
+  // Optional button or link shown under the text.
+  action?: ReactNode;
+}
+
+export interface ProjectCardProps {
+  project: Project;
+  // Managers and admins get the edit/delete menu.
+  canManage: boolean;
+  onEdit: (project: Project) => void;
+  onDelete: (project: Project) => void;
+}
+
+export interface ProjectFormDialogProps {
+  open: boolean;
+  // null = create a new project; a project = edit it.
+  project: Project | null;
+  onClose: () => void;
+}
+
+export interface DeleteProjectDialogProps {
+  // The dialog is open while this is set.
+  project: Project | null;
+  onClose: () => void;
+  // Called after the project is gone (e.g. to leave its page).
+  onDeleted?: (project: Project) => void;
+}
+
+export interface ProjectLoadErrorProps {
+  error: unknown;
+}
+
+export interface MembersPanelProps {
+  projectId: string;
+  // Add/remove controls. Needs MANAGER+ *and* access to the project.
+  canManage: boolean;
+}
+
+export interface AddMemberFormProps {
+  projectId: string;
+}
+
+export interface NonMemberProjectViewProps {
+  projectId: string;
+  // The 403 from the project detail request, shown if there is nothing else
+  // to show.
+  error: unknown;
 }

@@ -52,6 +52,16 @@ async function refreshAccessToken(): Promise<string | null> {
   }
 }
 
+// The only way to refresh: used by the 401 handler below and by the startup
+// session restore, so both share one in-flight request. That also absorbs
+// StrictMode running the startup effect twice in development.
+export function refreshSession(): Promise<string | null> {
+  pendingRefresh ??= refreshAccessToken().finally(() => {
+    pendingRefresh = null;
+  });
+  return pendingRefresh;
+}
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: unknown) => {
@@ -79,11 +89,7 @@ apiClient.interceptors.response.use(
       return apiClient(request);
     }
 
-    pendingRefresh ??= refreshAccessToken().finally(() => {
-      pendingRefresh = null;
-    });
-
-    const token = await pendingRefresh;
+    const token = await refreshSession();
     if (!token) {
       return Promise.reject(error);
     }

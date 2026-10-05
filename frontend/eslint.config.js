@@ -20,7 +20,7 @@ const noInlineCopy = [
 ];
 
 export default defineConfig([
-  globalIgnores(["dist/**", "node_modules/**"]),
+  globalIgnores(["dist/**", "coverage/**", "node_modules/**"]),
   {
     files: ["**/*.{ts,tsx}"],
     extends: [

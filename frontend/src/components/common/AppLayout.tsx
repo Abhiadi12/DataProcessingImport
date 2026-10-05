@@ -2,6 +2,7 @@ import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { Link as RouterLink, Outlet, useLocation } from "react-router";
+import { UserMenu } from "@/components/user/UserMenu";
 import { APP_MESSAGES, ROUTES } from "@/constants";
 import { ApiStatusChip } from "./ApiStatusChip";
 import { ErrorBoundary } from "./ErrorBoundary";
@@ -22,8 +23,9 @@ export function AppLayout() {
           >
             {APP_MESSAGES.NAME}
           </Typography>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-3">
             <ApiStatusChip />
+            <UserMenu />
           </div>
         </Toolbar>
       </AppBar>

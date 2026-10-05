@@ -28,3 +28,8 @@ export interface PaginationParams {
 export interface RetriableRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
+
+export interface ValidationErrorDetails {
+  formErrors?: string[];
+  fieldErrors?: Record<string, string[] | undefined>;
+}

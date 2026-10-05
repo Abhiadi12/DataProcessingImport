@@ -1,8 +1,12 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { AUTH_STATUS } from "@/constants";
 import type { AuthSession, AuthState, RootState } from "@/types";
 
 // INFO: accessToken in the state memory , as we have refresh token inside httpOnly cookie
+// Starts as "checking": on every page load the token is gone from memory, but
+// the refresh cookie may still be valid — useRestoreSession finds out.
 const initialState: AuthState = {
+  status: AUTH_STATUS.CHECKING,
   accessToken: null,
   user: null,
 };
@@ -12,11 +16,12 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setSession(state, action: PayloadAction<AuthSession>) {
+      state.status = AUTH_STATUS.AUTHENTICATED;
       state.accessToken = action.payload.accessToken;
       state.user = action.payload.user;
     },
     clearSession() {
-      return initialState;
+      return { status: AUTH_STATUS.ANONYMOUS, accessToken: null, user: null };
     },
   },
 });
@@ -24,6 +29,8 @@ const authSlice = createSlice({
 export const { setSession, clearSession } = authSlice.actions;
 export const authReducer = authSlice.reducer;
 
+export const selectAuthStatus = (state: RootState) => state.auth.status;
 export const selectAccessToken = (state: RootState) => state.auth.accessToken;
 export const selectCurrentUser = (state: RootState) => state.auth.user;
-export const selectIsAuthenticated = (state: RootState) => state.auth.accessToken !== null;
+export const selectIsAuthenticated = (state: RootState) =>
+  state.auth.status === AUTH_STATUS.AUTHENTICATED;

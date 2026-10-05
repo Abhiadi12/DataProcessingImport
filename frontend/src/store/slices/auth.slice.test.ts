@@ -15,6 +15,7 @@ import {
   selectCurrentUser,
   selectIsAuthenticated,
   setSession,
+  setUser,
 } from "./auth.slice";
 
 describe("auth slice", () => {
@@ -35,6 +36,14 @@ describe("auth slice", () => {
     const state = authReducer(loggedIn, clearSession());
 
     expect(state).toEqual(mockAnonymousAuthState);
+  });
+
+  it("setUser replaces the user but keeps the token and status", () => {
+    const renamed = { ...mockUser, name: "Jane Renamed" };
+    const loggedIn = authReducer(undefined, setSession(mockAuthSession));
+    const state = authReducer(loggedIn, setUser(renamed));
+
+    expect(state).toEqual({ ...mockAuthenticatedAuthState, user: renamed });
   });
 
   it("selectors read from the auth state", () => {

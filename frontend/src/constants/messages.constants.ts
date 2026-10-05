@@ -1,3 +1,4 @@
+import type { Role } from "@/types";
 import { NAME_MAX_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "./validation.constants";
 
 export const APP_MESSAGES = {
@@ -11,6 +12,8 @@ export const COMMON_MESSAGES = {
   NETWORK_ERROR: "Unable to reach the server. Check your connection.",
   BACK_HOME: "Back to home",
   CLOSE: "Close",
+  CANCEL: "Cancel",
+  SAVE_CHANGES: "Save changes",
 } as const;
 
 export const ERROR_BOUNDARY_MESSAGES = {
@@ -58,6 +61,9 @@ export const FIELD_LABELS = {
   EMAIL: "Email",
   PASSWORD: "Password",
   CONFIRM_PASSWORD: "Confirm password",
+  CURRENT_PASSWORD: "Current password",
+  NEW_PASSWORD: "New password",
+  CONFIRM_NEW_PASSWORD: "Confirm new password",
   SHOW_PASSWORD: "Show password",
   HIDE_PASSWORD: "Hide password",
 } as const;
@@ -70,6 +76,57 @@ export const VALIDATION_MESSAGES = {
   PASSWORD_TOO_SHORT: `Password must be at least ${PASSWORD_MIN_LENGTH} characters`,
   PASSWORD_TOO_LONG: `Password must be at most ${PASSWORD_MAX_LENGTH} characters`,
   PASSWORDS_DO_NOT_MATCH: "Passwords do not match",
+  CURRENT_PASSWORD_REQUIRED: "Current password is required",
+  NEW_PASSWORD_MUST_DIFFER: "New password must be different from the current password",
+} as const;
+
+export const NAV_MESSAGES = {
+  USERS: "Users",
+  PROFILE: "Profile",
+} as const;
+
+export const ROLE_LABELS: Record<Role, string> = {
+  ADMIN: "Admin",
+  MANAGER: "Manager",
+  MEMBER: "Member",
+};
+
+export const PROFILE_MESSAGES = {
+  TITLE: "Profile",
+  SUBTITLE: "Manage your account details and password.",
+  DETAILS_TITLE: "Account details",
+  ROLE: "Role",
+  MEMBER_SINCE: "Member since",
+  PASSWORD_TITLE: "Change password",
+  PASSWORD_HINT: "Changing your password signs you out of every device.",
+  PASSWORD_SUBMIT: "Change password",
+} as const;
+
+export const USERS_MESSAGES = {
+  TITLE: "Users",
+  SUBTITLE: "Manage roles and access for everyone on the platform.",
+  EMPTY: "No users found.",
+  COLUMN_NAME: "Name",
+  COLUMN_EMAIL: "Email",
+  COLUMN_ROLE: "Role",
+  COLUMN_ACTIVE: "Active",
+  COLUMN_JOINED: "Joined",
+  COLUMN_ACTIONS: "Actions",
+  YOU: "You",
+  ROWS_PER_PAGE: "Rows per page",
+  DETAILS_TITLE: "User details",
+  STATUS: "Status",
+  ACTIVE: "Active",
+  INACTIVE: "Deactivated",
+  LAST_UPDATED: "Last updated",
+  PROMOTE_TITLE: "Make this user an admin?",
+  PROMOTE_CONFIRM: "Make admin",
+  viewDetailsOf: (name: string) => `View details of ${name}`,
+  roleOf: (name: string) => `Role of ${name}`,
+  activeStatusOf: (name: string) => `Active status of ${name}`,
+  // Admins cannot be demoted by the API, so this cannot be undone from the UI.
+  promoteWarning: (name: string) =>
+    `${name} will get full access to every project and user. An admin cannot be changed back to a lower role.`,
 } as const;
 
 export const NOT_FOUND_MESSAGES = {

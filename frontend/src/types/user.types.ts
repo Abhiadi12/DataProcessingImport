@@ -10,3 +10,28 @@ export interface PublicUser {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface UpdateProfileInput {
+  name: string;
+  email: string;
+}
+
+export interface ChangePasswordInput {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ChangePasswordFormValues extends ChangePasswordInput {
+  confirmNewPassword: string;
+}
+
+// Admin-only: at least one of the two must be present.
+export interface UpdateUserInput {
+  role?: Role;
+  isActive?: boolean;
+}
+
+export interface UpdateUserVariables {
+  id: string;
+  input: UpdateUserInput;
+}

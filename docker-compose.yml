@@ -21,8 +21,10 @@ services:
     env_file: ./backend/.env
     environment:
       RUSTFS_CONSOLE_ENABLE: "true" # console is OFF by default
-      RUSTFS_REGION:
-      RUSTFS_CORS_ALLOWED_ORIGINS: "http://localhost:5173"
+      RUSTFS_REGION: # Origins allowed to PUT files straight to this server with a presigned
+
+      # URL: the Vite dev server (5173) and the frontend container below (8080).
+      RUSTFS_CORS_ALLOWED_ORIGINS: "http://localhost:5173,http://localhost:8080"
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -63,6 +65,18 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  # Production build of the React app, served by Nginx, which also forwards
+  # /api and /health to the backend so the browser sees a single origin.
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    environment:
+      API_UPSTREAM: ${API_UPSTREAM:-http://host.docker.internal:4000}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8080:8080"
 
 volumes:
   postgres-data:

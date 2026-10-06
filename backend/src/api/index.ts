@@ -24,6 +24,7 @@ async function bootstrap(): Promise<void> {
       void container.queueConnection
         .close()
         .catch((error: unknown) => logger.error({ err: error }, "Error closing AMQP"))
+        .then(() => container.redis.quit())
         .then(() => container.prisma.$disconnect())
         .then(() => {
           container.s3.destroy();

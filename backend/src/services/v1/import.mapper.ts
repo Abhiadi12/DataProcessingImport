@@ -7,12 +7,6 @@ export interface ImportView {
   uploadedById: string;
   filename: string;
   objectKey: string;
-  /**
-   * Converted from BigInt on purpose: `JSON.stringify` THROWS on a BigInt
-   * ("Do not know how to serialize a BigInt"), so returning the Prisma value
-   * directly would 500 the endpoint. Number is safe here because
-   * MAX_UPLOAD_BYTES (2 GiB) is far below Number.MAX_SAFE_INTEGER.
-   */
   sizeBytes: number;
   bytesRead: number;
   contentType: string;
@@ -25,7 +19,6 @@ export interface ImportView {
   successfulRows: number;
   failedRows: number;
   duplicateRows: number;
-  /** Bytes-based, because the row count is unknowable until the file is fully read. */
   progressPercent: number;
   errorReportKey: string | null;
   queuedAt: Date | null;
@@ -76,4 +69,41 @@ export function toImportView(record: Import): ImportView {
     completedAt: record.completedAt,
     createdAt: record.createdAt,
   };
+}
+
+export interface ImportDetailView extends ImportView {
+  schemaName: string;
+  uploadedByName: string;
+  /** First N errors, so the details page needs no extra request. */
+  errorSample: {
+    rowNumber: number;
+    rawRow: string;
+    errors: { field: string; message: string }[];
+  }[];
+  hasErrorReport: boolean;
+}
+
+export interface ImportProgressView {
+  importId: string;
+  status: ImportStatus;
+  stage: ImportStage | null;
+  /** bytesRead / sizeBytes — NOT processed/total, which is unknowable mid-stream. */
+  progressPercent: number;
+  bytesRead: number;
+  sizeBytes: number;
+  processed: number;
+  successful: number;
+  failed: number;
+  duplicates: number;
+  /** null until COMPLETED: counting rows requires reading the whole file. */
+  totalRows: number | null;
+  rowsPerSecond: number | null;
+  /** "redis" while running, "database" once terminal or the key has expired. */
+  source: "redis" | "database";
+}
+
+export function percentOf(bytesRead: number, sizeBytes: number): number {
+  if (sizeBytes <= 0) return 0;
+  // Clamped: a final flush can report marginally more than the declared size.
+  return Math.min(100, Math.round((bytesRead / sizeBytes) * 1000) / 10);
 }

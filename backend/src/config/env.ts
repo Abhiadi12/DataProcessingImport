@@ -33,6 +33,7 @@ const envSchema = z.object({
     .default("true")
     .transform((value) => value === "true"),
   RABBITMQ_URL: z.string().url(),
+  REDIS_URL: z.string().url(),
   PRESIGN_EXPIRY_SECONDS: z.coerce.number().int().positive().default(900),
   MAX_UPLOAD_BYTES: z.coerce
     .number()

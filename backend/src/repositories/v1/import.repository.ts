@@ -21,6 +21,23 @@ export interface ImportProgress {
   bytesRead: number;
 }
 
+export interface ListImportsParams {
+  skip: number;
+  take: number;
+  status?: ImportStatus;
+}
+
+/** Import rows joined with the display names the UI needs. */
+export interface ImportWithRelations extends Import {
+  schema: { name: string };
+  uploadedBy: { name: string };
+}
+
+export interface ListImportsResult {
+  imports: ImportWithRelations[];
+  total: number;
+}
+
 export class ImportRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
@@ -127,6 +144,70 @@ export class ImportRepository {
         errorReportKey,
         completedAt: new Date(),
       },
+    });
+  }
+
+  /** Terminal cancel, keeping whatever counters the attempt reached. */
+  async markCancelled(
+    id: string,
+    progress: ImportProgress,
+    errorReportKey: string | null,
+  ): Promise<void> {
+    await this.prisma.import.update({
+      where: { id },
+      data: {
+        status: ImportStatus.CANCELLED,
+        processedRows: progress.processed,
+        successfulRows: progress.successful,
+        failedRows: progress.failed,
+        duplicateRows: progress.duplicates,
+        bytesRead: BigInt(progress.bytesRead),
+        errorReportKey,
+        completedAt: new Date(),
+      },
+    });
+  }
+
+  /**
+   * Cancel an import no worker has claimed yet.
+   *
+   * Conditional on QUEUED so it cannot race a worker claiming it at the same
+   * moment — exactly one of the two wins. The queue MESSAGE is deliberately left
+   * in place: RabbitMQ has no "delete one message" operation, so this row acts
+   * as a tombstone and the worker's claim will refuse it and ack.
+   */
+  async cancelQueued(id: string): Promise<boolean> {
+    const { count } = await this.prisma.import.updateMany({
+      where: { id, status: ImportStatus.QUEUED },
+      data: { status: ImportStatus.CANCELLED, completedAt: new Date() },
+    });
+    return count === 1;
+  }
+
+  /** Paginated history for one project, newest first, optionally filtered by status. */
+  async listForProject(
+    projectId: string,
+    { skip, take, status }: ListImportsParams,
+  ): Promise<ListImportsResult> {
+    const where = { projectId, ...(status === undefined ? {} : { status }) };
+    const [imports, total] = await this.prisma.$transaction([
+      this.prisma.import.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: "desc" },
+        include: { schema: { select: { name: true } }, uploadedBy: { select: { name: true } } },
+      }),
+      this.prisma.import.count({ where }),
+    ]);
+    return { imports, total };
+  }
+
+  /** One import plus the display names the UI needs, in a single query. */
+  async findDetailById(id: string): Promise<ImportWithRelations | null> {
+    return this.prisma.import.findUnique({
+      where: { id },
+      include: { schema: { select: { name: true } }, uploadedBy: { select: { name: true } } },
     });
   }
 

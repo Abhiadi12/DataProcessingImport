@@ -1,3 +1,4 @@
+import { ImportStatus } from "@prisma/client";
 import { z } from "zod";
 import {
   ALLOWED_IMPORT_CONTENT_TYPES,
@@ -6,6 +7,7 @@ import {
 } from "../../../constants/index.js";
 import { env } from "../../../config/env.js";
 import { allowedExtensionFor, extensionOf } from "../../../utils/filename.js";
+import { paginationQuerySchema } from "./pagination.schema.js";
 
 /**
  * What the client declares BEFORE uploading. Every field here is a claim, not a
@@ -52,6 +54,11 @@ export const importIdParamSchema = z.object({
   id: z.string().uuid(),
 });
 
+export const listImportsQuerySchema = paginationQuerySchema.extend({
+  status: z.nativeEnum(ImportStatus).optional(),
+});
+
+export type ListImportsQuery = z.infer<typeof listImportsQuerySchema>;
 export type CreateImportBody = z.infer<typeof createImportSchema>;
 export type ImportIdParam = z.infer<typeof importIdParamSchema>;
 

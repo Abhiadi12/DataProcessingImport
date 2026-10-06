@@ -24,3 +24,38 @@ importRouter.post(
   validate({ params: importIdParamSchema }),
   v1ImportController.startImport,
 );
+
+importRouter.get(
+  "/:id",
+  authenticate,
+  validate({ params: importIdParamSchema }),
+  v1ImportController.getImportById,
+);
+
+importRouter.get(
+  "/:id/progress",
+  authenticate,
+  validate({ params: importIdParamSchema }),
+  v1ImportController.getImportProgress,
+);
+
+importRouter.post(
+  "/:id/cancel",
+  authenticate,
+  validate({ params: importIdParamSchema }),
+  v1ImportController.cancelImport,
+);
+
+importRouter.get(
+  "/:id/download",
+  authenticate,
+  validate({ params: importIdParamSchema }),
+  v1ImportController.downloadImport,
+);
+
+importRouter.get(
+  "/:id/error-report",
+  authenticate,
+  validate({ params: importIdParamSchema }),
+  v1ImportController.downloadErrorReport,
+);

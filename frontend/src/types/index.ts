@@ -8,4 +8,5 @@ export type * from "./project.types";
 export type * from "./route.types";
 export type * from "./schema.types";
 export type * from "./store.types";
+export type * from "./table.types";
 export type * from "./user.types";

@@ -1,7 +1,9 @@
 import type { TextFieldProps } from "@mui/material/TextField";
 import type { ReactNode } from "react";
+import type { ImportStatus } from "./import.types";
 import type { Project } from "./project.types";
 import type { FieldsDefinition } from "./schema.types";
+import type { DataTablePagination } from "./table.types";
 import type { PublicUser, Role, UpdateUserInput } from "./user.types";
 
 export interface AppProvidersProps {
@@ -60,6 +62,9 @@ export interface UsersTableProps {
   updatingId: string | null;
   onView: (id: string) => void;
   onUpdate: (user: PublicUser, input: UpdateUserInput) => void;
+  // Passed straight to the underlying DataTable.
+  isRefreshing?: boolean;
+  pagination?: DataTablePagination;
 }
 
 export interface UserDetailsDialogProps {
@@ -151,7 +156,6 @@ export type InputProps = TextFieldProps;
 
 export interface FileInputProps {
   label: string;
-  // Passed to the native input's `accept`, e.g. ".csv,text/csv".
   accept: string;
   file: File | null;
   onChange: (file: File | null) => void;
@@ -168,4 +172,12 @@ export interface UploadImportDialogProps {
   open: boolean;
   projectId: string;
   onClose: () => void;
+}
+
+export interface ImportStatusChipProps {
+  status: ImportStatus;
+}
+
+export interface ImportHistoryTableProps {
+  projectId: string;
 }

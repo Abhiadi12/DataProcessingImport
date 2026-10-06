@@ -1,3 +1,5 @@
+import type { PaginationParams } from "./api.types";
+
 export type ImportStatus =
   "UPLOADING" | "QUEUED" | "PROCESSING" | "COMPLETED" | "FAILED" | "CANCELLED";
 
@@ -19,7 +21,6 @@ export interface ImportRecord {
   stage: ImportStage | null;
   attempt: number;
   failureReason: string | null;
-  // Unknown until the whole file has been read.
   totalRows: number | null;
   processedRows: number;
   successfulRows: number;
@@ -31,6 +32,17 @@ export interface ImportRecord {
   startedAt: string | null;
   completedAt: string | null;
   createdAt: string;
+}
+
+export interface ImportListItem extends ImportRecord {
+  schemaName: string;
+  uploadedByName: string;
+  hasErrorReport: boolean;
+}
+
+export interface ImportListParams extends PaginationParams {
+  // Omit to list imports in every status.
+  status?: ImportStatus;
 }
 
 // Step 1's request: what the browser says it is about to upload. The API

@@ -5,23 +5,17 @@ import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
-import LinearProgress from "@mui/material/LinearProgress";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TablePagination from "@mui/material/TablePagination";
-import TableRow from "@mui/material/TableRow";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { DataTable } from "@/components/common/DataTable";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PageLoader } from "@/components/common/PageLoader";
 import {
   DEFAULT_PAGE_SIZE,
   PAGE_SIZE_OPTIONS,
+  PROJECTS_MESSAGES,
   ROLE,
   SCHEMAS_MESSAGES,
   USERS_MESSAGES,
@@ -30,7 +24,7 @@ import { useAppSelector } from "@/hooks/redux.hooks";
 import { useNotify } from "@/hooks/useNotify";
 import { useArchiveSchema, useGetProjectSchemas } from "@/service/schema.service";
 import { selectCurrentUser } from "@/store/slices/auth.slice";
-import type { ImportSchema, SchemasPanelProps } from "@/types";
+import type { DataTableColumn, ImportSchema, SchemasPanelProps } from "@/types";
 import { getApiErrorMessage } from "@/utils/api-error";
 import { formatDate } from "@/utils/format";
 import { hasRole } from "@/utils/role";
@@ -64,16 +58,75 @@ export function SchemasPanel({ projectId, canManage }: SchemasPanelProps) {
     archiveSchema.mutate(archiving.id, {
       onSuccess: (res) => {
         notify.success(res.message);
-        // Archiving the only schema on a later page would leave it empty.
         if (page && page.items.length === 1 && pageIndex > 0) {
           setPageIndex(pageIndex - 1);
         }
       },
-      // e.g. "That import schema has imports and cannot be archived".
       onError: (error) => notify.error(getApiErrorMessage(error)),
     });
     setArchiving(null);
   };
+
+  const columns: DataTableColumn<ImportSchema>[] = [
+    {
+      key: "name",
+      header: SCHEMAS_MESSAGES.COLUMN_NAME,
+      render: (schema) => (
+        <span className="flex items-center gap-2">
+          {schema.name}
+          {schema.isGlobal && (
+            <Chip size="small" variant="outlined" color="primary" label={SCHEMAS_MESSAGES.GLOBAL} />
+          )}
+        </span>
+      ),
+    },
+    {
+      key: "fields",
+      header: SCHEMAS_MESSAGES.COLUMN_FIELDS,
+      render: (schema) => Object.keys(schema.fields).length,
+    },
+    {
+      key: "unique",
+      header: SCHEMAS_MESSAGES.COLUMN_UNIQUE,
+      className: "font-mono text-sm",
+      render: (schema) => schema.uniqueFields.join(", "),
+    },
+    {
+      key: "created",
+      header: SCHEMAS_MESSAGES.COLUMN_CREATED,
+      className: "whitespace-nowrap",
+      render: (schema) => formatDate(schema.createdAt),
+    },
+    {
+      key: "actions",
+      header: USERS_MESSAGES.COLUMN_ACTIONS,
+      align: "right",
+      className: "whitespace-nowrap",
+      render: (schema) => (
+        <>
+          <Tooltip title={SCHEMAS_MESSAGES.viewDetailsOf(schema.name)}>
+            <IconButton
+              onClick={() => setViewingId(schema.id)}
+              aria-label={SCHEMAS_MESSAGES.viewDetailsOf(schema.name)}
+            >
+              <VisibilityOutlinedIcon />
+            </IconButton>
+          </Tooltip>
+          {canArchive(schema) && (
+            <Tooltip title={SCHEMAS_MESSAGES.archiveLabel(schema.name)}>
+              <IconButton
+                onClick={() => setArchiving(schema)}
+                disabled={archiveSchema.isPending}
+                aria-label={SCHEMAS_MESSAGES.archiveLabel(schema.name)}
+              >
+                <ArchiveOutlinedIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+        </>
+      ),
+    },
+  ];
 
   const newSchemaButton = canManage && (
     <Button variant="contained" startIcon={<AddIcon />} onClick={() => setFormOpen(true)}>
@@ -106,84 +159,28 @@ export function SchemasPanel({ projectId, canManage }: SchemasPanelProps) {
         />
       )}
 
+      {/* The empty case has its own, fuller message above, so the table is
+          only shown once there is something to list. */}
       {page && page.total > 0 && (
-        <>
-          {/* Shown while a different page is loading behind the current rows. */}
-          {schemas.isFetching && <LinearProgress />}
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>{SCHEMAS_MESSAGES.COLUMN_NAME}</TableCell>
-                  <TableCell>{SCHEMAS_MESSAGES.COLUMN_FIELDS}</TableCell>
-                  <TableCell>{SCHEMAS_MESSAGES.COLUMN_UNIQUE}</TableCell>
-                  <TableCell>{SCHEMAS_MESSAGES.COLUMN_CREATED}</TableCell>
-                  <TableCell align="right">{USERS_MESSAGES.COLUMN_ACTIONS}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {page.items.map((schema) => (
-                  <TableRow key={schema.id} hover>
-                    <TableCell>
-                      <span className="flex items-center gap-2">
-                        {schema.name}
-                        {schema.isGlobal && (
-                          <Chip
-                            size="small"
-                            variant="outlined"
-                            color="primary"
-                            label={SCHEMAS_MESSAGES.GLOBAL}
-                          />
-                        )}
-                      </span>
-                    </TableCell>
-                    <TableCell>{Object.keys(schema.fields).length}</TableCell>
-                    <TableCell className="font-mono text-sm">
-                      {schema.uniqueFields.join(", ")}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {formatDate(schema.createdAt)}
-                    </TableCell>
-                    <TableCell align="right" className="whitespace-nowrap">
-                      <Tooltip title={SCHEMAS_MESSAGES.viewDetailsOf(schema.name)}>
-                        <IconButton
-                          onClick={() => setViewingId(schema.id)}
-                          aria-label={SCHEMAS_MESSAGES.viewDetailsOf(schema.name)}
-                        >
-                          <VisibilityOutlinedIcon />
-                        </IconButton>
-                      </Tooltip>
-                      {canArchive(schema) && (
-                        <Tooltip title={SCHEMAS_MESSAGES.archiveLabel(schema.name)}>
-                          <IconButton
-                            onClick={() => setArchiving(schema)}
-                            disabled={archiveSchema.isPending}
-                            aria-label={SCHEMAS_MESSAGES.archiveLabel(schema.name)}
-                          >
-                            <ArchiveOutlinedIcon />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <TablePagination
-            component="div"
-            count={page.total}
-            page={pageIndex}
-            rowsPerPage={pageSize}
-            rowsPerPageOptions={PAGE_SIZE_OPTIONS}
-            labelRowsPerPage={USERS_MESSAGES.ROWS_PER_PAGE}
-            onPageChange={(_event, nextPage) => setPageIndex(nextPage)}
-            onRowsPerPageChange={(event) => {
-              setPageSize(Number(event.target.value));
+        <DataTable
+          label={PROJECTS_MESSAGES.TAB_SCHEMAS}
+          columns={columns}
+          rows={page.items}
+          getRowKey={(schema) => schema.id}
+          emptyMessage={SCHEMAS_MESSAGES.EMPTY_TITLE}
+          isRefreshing={schemas.isFetching}
+          pagination={{
+            page: pageIndex,
+            pageSize,
+            total: page.total,
+            pageSizeOptions: PAGE_SIZE_OPTIONS,
+            onPageChange: setPageIndex,
+            onPageSizeChange: (nextSize) => {
+              setPageSize(nextSize);
               setPageIndex(0);
-            }}
-          />
-        </>
+            },
+          }}
+        />
       )}
 
       <SchemaFormDialog open={formOpen} projectId={projectId} onClose={() => setFormOpen(false)} />

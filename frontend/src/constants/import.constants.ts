@@ -1,4 +1,4 @@
-import type { UploadStep } from "@/types";
+import type { ImportStatus, UploadStep } from "@/types";
 
 // Mirrors backend/src/constants/storage.constants.ts and MAX_UPLOAD_BYTES in
 // its env config. The backend is the real check; these let the form refuse a
@@ -32,3 +32,25 @@ export const UPLOAD_STEP = {
   UPLOADING: "uploading",
   STARTING: "starting",
 } as const satisfies Record<string, UploadStep>;
+
+export const IMPORT_STATUS = {
+  UPLOADING: "UPLOADING",
+  QUEUED: "QUEUED",
+  PROCESSING: "PROCESSING",
+  COMPLETED: "COMPLETED",
+  FAILED: "FAILED",
+  CANCELLED: "CANCELLED",
+} as const satisfies Record<ImportStatus, ImportStatus>;
+
+// In the order an import moves through them; also the order of the filter.
+export const IMPORT_STATUSES = Object.values(IMPORT_STATUS);
+
+// Not finished yet, so the numbers on screen are still changing.
+export const ACTIVE_IMPORT_STATUSES: readonly ImportStatus[] = [
+  IMPORT_STATUS.UPLOADING,
+  IMPORT_STATUS.QUEUED,
+  IMPORT_STATUS.PROCESSING,
+];
+
+// Value of the status filter's "show everything" option.
+export const ALL_STATUSES = "ALL";

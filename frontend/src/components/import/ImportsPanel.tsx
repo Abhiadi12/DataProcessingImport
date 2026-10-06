@@ -2,9 +2,9 @@ import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
-import { EmptyState } from "@/components/common/EmptyState";
 import { IMPORTS_MESSAGES } from "@/constants";
 import type { ImportsPanelProps } from "@/types";
+import { ImportHistoryTable } from "./ImportHistoryTable";
 import { UploadImportDialog } from "./UploadImportDialog";
 
 export function ImportsPanel({ projectId }: ImportsPanelProps) {
@@ -25,10 +25,7 @@ export function ImportsPanel({ projectId }: ImportsPanelProps) {
         </Button>
       </div>
 
-      <EmptyState
-        title={IMPORTS_MESSAGES.HISTORY_PLACEHOLDER_TITLE}
-        description={IMPORTS_MESSAGES.HISTORY_PLACEHOLDER}
-      />
+      <ImportHistoryTable projectId={projectId} />
 
       <UploadImportDialog
         open={uploadOpen}

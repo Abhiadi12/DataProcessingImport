@@ -17,6 +17,7 @@ export const QUERY_KEYS = {
   IMPORT_SCHEMAS_LIST: ["import-schemas", "list"],
   IMPORT_SCHEMA_DETAIL: ["import-schemas", "detail"],
   IMPORTS_ALL: ["imports"],
+  IMPORTS_LIST: ["imports", "list"],
 } as const;
 
 export const QUERY_DEFAULTS = {
@@ -25,3 +26,5 @@ export const QUERY_DEFAULTS = {
 } as const;
 
 export const HEALTH_POLL_INTERVAL_MS = 30_000;
+
+export const IMPORTS_POLL_INTERVAL_MS = 5_000;

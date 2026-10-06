@@ -1,6 +1,8 @@
+import Link from "@mui/material/Link";
 import MenuItem from "@mui/material/MenuItem";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
+import { Link as RouterLink } from "react-router";
 import { DataTable } from "@/components/common/DataTable";
 import { Input } from "@/components/common/Input";
 import {
@@ -8,6 +10,7 @@ import {
   DEFAULT_PAGE_SIZE,
   IMPORT_STATUS_LABELS,
   IMPORT_STATUSES,
+  importPath,
   IMPORTS_MESSAGES,
   PAGE_SIZE_OPTIONS,
 } from "@/constants";
@@ -29,9 +32,16 @@ const COLUMNS: DataTableColumn<ImportListItem>[] = [
     header: IMPORTS_MESSAGES.COLUMN_FILE,
     render: (item) => (
       <div className="max-w-64">
-        <Typography variant="body2" className="truncate font-medium" title={item.filename}>
+        <Link
+          component={RouterLink}
+          to={importPath(item.id)}
+          variant="body2"
+          underline="hover"
+          className="block truncate font-medium"
+          title={item.filename}
+        >
           {item.filename}
-        </Typography>
+        </Link>
         <Typography variant="caption" color="text.secondary">
           {formatBytes(item.sizeBytes)}
         </Typography>

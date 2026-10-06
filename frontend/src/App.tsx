@@ -5,6 +5,7 @@ import { AppLayout } from "@/components/common/AppLayout";
 import { AppSnackbar } from "@/components/common/AppSnackbar";
 import { ROLE, ROUTES } from "@/constants";
 import { useRestoreSession } from "@/hooks/useRestoreSession";
+import { ImportDetailPage } from "@/pages/ImportDetailPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ProfilePage } from "@/pages/ProfilePage";
@@ -28,6 +29,7 @@ export function App() {
           <Route element={<RequireAuth />}>
             <Route path={ROUTES.HOME} element={<ProjectsPage />} />
             <Route path={ROUTES.PROJECT_DETAIL} element={<ProjectDetailPage />} />
+            <Route path={ROUTES.IMPORT_DETAIL} element={<ImportDetailPage />} />
             <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
             <Route element={<RequireAuth minimumRole={ROLE.ADMIN} />}>
               <Route path={ROUTES.USERS} element={<UsersPage />} />

@@ -1,4 +1,4 @@
-import type { FieldType, ImportStatus, Role } from "@/types";
+import type { FieldType, ImportStage, ImportStatus, Role } from "@/types";
 import {
   SCHEMA_DESCRIPTION_MAX_LENGTH,
   SCHEMA_FIELD_NAME_MAX_LENGTH,
@@ -275,6 +275,58 @@ export const IMPORT_STATUS_LABELS: Record<ImportStatus, string> = {
   FAILED: "Failed",
   CANCELLED: "Cancelled",
 };
+
+export const IMPORT_STAGE_LABELS: Record<ImportStage, string> = {
+  FILE_VALIDATION: "File validation",
+  SCHEMA_VALIDATION: "Schema validation",
+  IMPORTING: "Importing",
+  REPORT_GENERATION: "Report generation",
+};
+
+export const IMPORT_DETAIL_MESSAGES = {
+  BACK: "Back to imports",
+  PROGRESS_TITLE: "Progress",
+  STAGES_LABEL: "Import stages",
+  WAITING: "Waiting for a worker to pick this import up.",
+  NOT_STARTED: "This file was never started, so nothing has been imported.",
+  CANCELLED: "This import was cancelled. Rows imported before that are kept.",
+  FAILED_TITLE: "This import failed",
+  NO_REASON: "No reason was recorded.",
+  COUNTERS_TITLE: "Rows",
+  PROCESSED: "Processed",
+  SUCCESSFUL: "Successful",
+  FAILED: "Failed",
+  DUPLICATES: "Duplicates",
+  DETAILS_TITLE: "Details",
+  SCHEMA: "Schema",
+  UPLOADED_BY: "Uploaded by",
+  FILE_SIZE: "File size",
+  TOTAL_ROWS: "Total rows",
+  // Unknown until the whole file has been read.
+  TOTAL_ROWS_UNKNOWN: "Known when the import finishes",
+  SPEED: "Speed",
+  ATTEMPT: "Attempt",
+  UPLOADED_AT: "Uploaded",
+  QUEUED_AT: "Queued",
+  STARTED_AT: "Started",
+  FINISHED_AT: "Finished",
+  NOT_YET: "—",
+  ERRORS_TITLE: "Sample of rows that failed",
+  ERRORS_HINT: "The first failed rows, to show what went wrong.",
+  ERRORS_EMPTY: "No rows have failed.",
+  ERROR_ROW: "Row",
+  ERROR_PROBLEMS: "Problems",
+  ERROR_RAW: "Row as it appears in the file",
+  NOT_FOUND_TITLE: "Import not found",
+  NOT_FOUND_DESCRIPTION: "This import does not exist, or its project has been deleted.",
+  FORBIDDEN_TITLE: "You cannot open this import",
+  FORBIDDEN_DESCRIPTION: "Only members of its project can see an import.",
+  ERROR_TITLE: "Could not load this import",
+  BACK_TO_PROJECTS: "Back to projects",
+  bytesOf: (read: string, total: string) => `${read} of ${total} read`,
+  rowsPerSecond: (rate: string) => `${rate} rows/s`,
+  fieldProblem: (field: string, message: string) => `${field}: ${message}`,
+} as const;
 
 export const FILE_INPUT_MESSAGES = {
   CHOOSE: "Choose file",

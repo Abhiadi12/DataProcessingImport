@@ -1,11 +1,12 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosStatic, { isCancel } from "axios";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ACTIVE_IMPORT_STATUSES,
   API_ENDPOINTS,
   DEFAULT_PAGE_SIZE,
   IDEMPOTENCY_HEADER,
+  IMPORT_PROGRESS_POLL_INTERVAL_MS,
   IMPORTS_POLL_INTERVAL_MS,
   QUERY_KEYS,
   UPLOAD_STEP,
@@ -13,9 +14,12 @@ import {
 import { useAxios } from "@/hooks/useAxios";
 import type {
   ApiResponse,
+  ImportDetail,
   ImportListItem,
   ImportListParams,
+  ImportProgress,
   ImportRecord,
+  ImportStatus,
   PaginatedData,
   PreparedUpload,
   PrepareUploadInput,
@@ -51,6 +55,62 @@ export const useGetProjectImports = (
       return hasActive ? IMPORTS_POLL_INTERVAL_MS : false;
     },
   });
+};
+
+export const useGetImport = (id: string) => {
+  const axios = useAxios();
+
+  return useQuery({
+    queryKey: [...QUERY_KEYS.IMPORT_DETAIL, id],
+    queryFn: async () => {
+      const res = await axios.get<ApiResponse<ImportDetail>>(API_ENDPOINTS.IMPORTS.byId(id));
+      return res.data;
+    },
+    refetchOnWindowFocus: "always",
+  });
+};
+
+//INFO: The import's live numbers. Polls every 1.5s while the import is still
+// running and stops by itself on the first answer that says it has finished —
+// so for an import that is already finished this is a single request (worth
+// making: the processing speed is only on this endpoint).
+export const useGetImportProgress = (id: string) => {
+  const axios = useAxios();
+
+  return useQuery({
+    queryKey: [...QUERY_KEYS.IMPORT_PROGRESS, id],
+    queryFn: async () => {
+      const res = await axios.get<ApiResponse<ImportProgress>>(API_ENDPOINTS.IMPORTS.progress(id));
+      return res.data;
+    },
+    // Every answer is out of date at once.
+    staleTime: 0,
+    refetchOnWindowFocus: "always",
+    refetchInterval: (query) => {
+      // A failed request (import not found, no access) will fail the same way
+      // every time — don't keep asking.
+      if (query.state.status === "error") {
+        return false;
+      }
+      const status = query.state.data?.data?.status;
+      const isRunning = status === undefined || ACTIVE_IMPORT_STATUSES.includes(status);
+      return isRunning ? IMPORT_PROGRESS_POLL_INTERVAL_MS : false;
+    },
+  });
+};
+
+// The moment the live status says the import has finished, re-fetch everything
+// about imports: the details gain the final counts, the failure reason and the
+// failed-row sample, and the history list shows the new status.
+export const useRefreshWhenImportFinishes = (liveStatus: ImportStatus | undefined) => {
+  const queryClient = useQueryClient();
+  const hasFinished = liveStatus !== undefined && !ACTIVE_IMPORT_STATUSES.includes(liveStatus);
+
+  useEffect(() => {
+    if (hasFinished) {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.IMPORTS_ALL });
+    }
+  }, [hasFinished, queryClient]);
 };
 
 export const useUploadImport = () => {

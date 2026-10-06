@@ -49,3 +49,5 @@ export const IMPORT_ERROR_SAMPLE_LIMIT = 1000;
 
 /** Bytes of the file read to validate the header row before streaming it all. */
 export const HEADER_PROBE_BYTES = 64 * 1024;
+
+export const MAX_IMPORT_ATTEMPTS = 3;

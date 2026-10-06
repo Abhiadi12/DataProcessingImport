@@ -34,6 +34,10 @@ const envSchema = z.object({
     .transform((value) => value === "true"),
   RABBITMQ_URL: z.string().url(),
   REDIS_URL: z.string().url(),
+  RABBITMQ_MANAGEMENT_URL: z.string().url().default("http://localhost:15672"),
+  RABBITMQ_MANAGEMENT_USER: z.string().min(1).default("guest"),
+  RABBITMQ_MANAGEMENT_PASSWORD: z.string().min(1).default("guest"),
+  RABBITMQ_MANAGEMENT_TIMEOUT_MS: z.coerce.number().int().positive().default(3000),
   PRESIGN_EXPIRY_SECONDS: z.coerce.number().int().positive().default(900),
   MAX_UPLOAD_BYTES: z.coerce
     .number()

@@ -5,3 +5,7 @@ export const PAGE_SIZE_OPTIONS = [10, 25, 50];
 // Projects are shown as a 3-column card grid, so page sizes are multiples of 3.
 export const PROJECT_PAGE_SIZE = 12;
 export const PROJECT_PAGE_SIZE_OPTIONS = [12, 24, 48];
+
+// The largest page the API allows. Used to load "all" of a short list for a
+// dropdown (e.g. the schema picker) in one request.
+export const MAX_PAGE_SIZE = 100;

@@ -146,3 +146,26 @@ export interface SchemaFieldRowProps {
   canRemove: boolean;
   onRemove: () => void;
 }
+
+export type InputProps = TextFieldProps;
+
+export interface FileInputProps {
+  label: string;
+  // Passed to the native input's `accept`, e.g. ".csv,text/csv".
+  accept: string;
+  file: File | null;
+  onChange: (file: File | null) => void;
+  error?: boolean;
+  helperText?: string;
+  disabled?: boolean;
+}
+
+export interface ImportsPanelProps {
+  projectId: string;
+}
+
+export interface UploadImportDialogProps {
+  open: boolean;
+  projectId: string;
+  onClose: () => void;
+}

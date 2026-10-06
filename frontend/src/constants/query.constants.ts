@@ -16,6 +16,7 @@ export const QUERY_KEYS = {
   IMPORT_SCHEMAS_ALL: ["import-schemas"],
   IMPORT_SCHEMAS_LIST: ["import-schemas", "list"],
   IMPORT_SCHEMA_DETAIL: ["import-schemas", "detail"],
+  IMPORTS_ALL: ["imports"],
 } as const;
 
 export const QUERY_DEFAULTS = {

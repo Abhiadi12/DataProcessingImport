@@ -100,6 +100,11 @@ export const VALIDATION_MESSAGES = {
     "Mark at least one field as unique. It identifies a record, so duplicates can be detected.",
   UNIQUE_MUST_BE_REQUIRED: "A unique field must also be required",
   UNIQUE_CANNOT_BE_BOOLEAN: "A boolean field cannot be unique",
+  FILE_REQUIRED: "Choose a file to upload",
+  FILE_TYPE_UNSUPPORTED: "Only .csv files are supported",
+  FILE_EMPTY: "This file is empty",
+  FILE_TOO_LARGE: "This file is larger than the 2 GB limit",
+  SCHEMA_REQUIRED: "Choose a schema",
   PROJECT_NAME_REQUIRED: "Project name is required",
   PROJECT_NAME_TOO_LONG: `Project name must be at most ${PROJECT_NAME_MAX_LENGTH} characters`,
   PROJECT_DESCRIPTION_TOO_LONG: `Description must be at most ${PROJECT_DESCRIPTION_MAX_LENGTH} characters`,
@@ -176,7 +181,6 @@ export const PROJECTS_MESSAGES = {
   TAB_MEMBERS: "Members",
   TAB_SCHEMAS: "Schemas",
   TAB_IMPORTS: "Imports",
-  IMPORTS_PLACEHOLDER: "File uploads and import history are coming next.",
   FORBIDDEN_TITLE: "You are not a member of this project",
   FORBIDDEN_DESCRIPTION:
     "Only members can open a project. Ask one of its managers to add you, then try again.",
@@ -258,6 +262,31 @@ export const SCHEMAS_MESSAGES = {
   archiveLabel: (name: string) => `Archive ${name}`,
   archiveWarning: (name: string) =>
     `"${name}" will no longer be available for new imports. This cannot be undone.`,
+} as const;
+
+export const FILE_INPUT_MESSAGES = {
+  CHOOSE: "Choose file",
+  CHANGE: "Change file",
+  NONE_SELECTED: "No file selected",
+} as const;
+
+export const IMPORTS_MESSAGES = {
+  INTRO: "Upload a CSV file and it will be validated against a schema, then imported.",
+  UPLOAD: "Upload file",
+  HISTORY_PLACEHOLDER_TITLE: "Import history",
+  HISTORY_PLACEHOLDER: "The list of this project's imports is coming next.",
+  UPLOAD_TITLE: "Upload a file",
+  FILE_LABEL: "File",
+  FILE_HINT: "CSV only, up to 2 GB. The first row must be the column names.",
+  SCHEMA_LABEL: "Schema",
+  SCHEMA_HINT: "The file's columns are checked against this schema.",
+  NO_SCHEMAS: "This project has no schemas yet. Create one in the Schemas tab first.",
+  UPLOAD_SUBMIT: "Upload and import",
+  CANCEL_UPLOAD: "Cancel upload",
+  STEP_PREPARING: "Preparing upload…",
+  STEP_STARTING: "Starting import…",
+  UPLOAD_CANCELLED: "Upload cancelled.",
+  uploadingPercent: (percent: number) => `Uploading… ${percent}%`,
 } as const;
 
 export const NOT_FOUND_MESSAGES = {

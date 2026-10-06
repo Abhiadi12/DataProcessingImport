@@ -1,4 +1,4 @@
-import type { FieldType, Role } from "@/types";
+import type { FieldType, ImportStatus, Role } from "@/types";
 import {
   SCHEMA_DESCRIPTION_MAX_LENGTH,
   SCHEMA_FIELD_NAME_MAX_LENGTH,
@@ -144,7 +144,6 @@ export const USERS_MESSAGES = {
   COLUMN_JOINED: "Joined",
   COLUMN_ACTIONS: "Actions",
   YOU: "You",
-  ROWS_PER_PAGE: "Rows per page",
   DETAILS_TITLE: "User details",
   STATUS: "Status",
   ACTIVE: "Active",
@@ -264,6 +263,19 @@ export const SCHEMAS_MESSAGES = {
     `"${name}" will no longer be available for new imports. This cannot be undone.`,
 } as const;
 
+export const TABLE_MESSAGES = {
+  ROWS_PER_PAGE: "Rows per page",
+} as const;
+
+export const IMPORT_STATUS_LABELS: Record<ImportStatus, string> = {
+  UPLOADING: "Uploading",
+  QUEUED: "Queued",
+  PROCESSING: "Processing",
+  COMPLETED: "Completed",
+  FAILED: "Failed",
+  CANCELLED: "Cancelled",
+};
+
 export const FILE_INPUT_MESSAGES = {
   CHOOSE: "Choose file",
   CHANGE: "Change file",
@@ -273,8 +285,20 @@ export const FILE_INPUT_MESSAGES = {
 export const IMPORTS_MESSAGES = {
   INTRO: "Upload a CSV file and it will be validated against a schema, then imported.",
   UPLOAD: "Upload file",
-  HISTORY_PLACEHOLDER_TITLE: "Import history",
-  HISTORY_PLACEHOLDER: "The list of this project's imports is coming next.",
+  TABLE_LABEL: "Import history",
+  EMPTY: "No files have been imported into this project yet.",
+  EMPTY_FOR_STATUS: "No imports with this status.",
+  STATUS_FILTER: "Status",
+  ALL_STATUSES: "All statuses",
+  COLUMN_FILE: "File",
+  COLUMN_SCHEMA: "Schema",
+  COLUMN_STATUS: "Status",
+  COLUMN_PROCESSED: "Processed",
+  COLUMN_SUCCESSFUL: "Successful",
+  COLUMN_FAILED: "Failed",
+  COLUMN_DUPLICATES: "Duplicates",
+  COLUMN_UPLOADED_BY: "Uploaded by",
+  COLUMN_UPLOADED: "Uploaded",
   UPLOAD_TITLE: "Upload a file",
   FILE_LABEL: "File",
   FILE_HINT: "CSV only, up to 2 GB. The first row must be the column names.",

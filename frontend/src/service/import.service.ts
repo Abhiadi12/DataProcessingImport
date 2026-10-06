@@ -1,17 +1,57 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosStatic, { isCancel } from "axios";
 import { useCallback, useRef, useState } from "react";
-import { API_ENDPOINTS, IDEMPOTENCY_HEADER, QUERY_KEYS, UPLOAD_STEP } from "@/constants";
+import {
+  ACTIVE_IMPORT_STATUSES,
+  API_ENDPOINTS,
+  DEFAULT_PAGE_SIZE,
+  IDEMPOTENCY_HEADER,
+  IMPORTS_POLL_INTERVAL_MS,
+  QUERY_KEYS,
+  UPLOAD_STEP,
+} from "@/constants";
 import { useAxios } from "@/hooks/useAxios";
 import type {
   ApiResponse,
+  ImportListItem,
+  ImportListParams,
   ImportRecord,
+  PaginatedData,
   PreparedUpload,
   PrepareUploadInput,
   UploadImportVariables,
   UploadStep,
 } from "@/types";
 import { importContentTypeOf } from "@/utils/file";
+
+export const useGetProjectImports = (
+  projectId: string,
+  { page = 1, limit = DEFAULT_PAGE_SIZE, status }: ImportListParams = {},
+) => {
+  const axios = useAxios();
+
+  return useQuery({
+    queryKey: [...QUERY_KEYS.IMPORTS_LIST, projectId, page, limit, status ?? null],
+    queryFn: async () => {
+      const res = await axios.get<ApiResponse<PaginatedData<ImportListItem>>>(
+        API_ENDPOINTS.PROJECTS.imports(projectId),
+        // An undefined status is left out of the query string by axios.
+        { params: { page, limit, status } },
+      );
+      return res.data;
+    },
+    placeholderData: keepPreviousData,
+    // Polling pauses while the tab is hidden (React Query's default — no point
+    // fetching for a page nobody is looking at). Refetch as soon as the user
+    // comes back, rather than showing stale numbers until the next tick.
+    refetchOnWindowFocus: "always",
+    refetchInterval: (query) => {
+      const items = query.state.data?.data?.items ?? [];
+      const hasActive = items.some((item) => ACTIVE_IMPORT_STATUSES.includes(item.status));
+      return hasActive ? IMPORTS_POLL_INTERVAL_MS : false;
+    },
+  });
+};
 
 export const useUploadImport = () => {
   const axios = useAxios();

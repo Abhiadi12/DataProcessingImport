@@ -1,7 +1,5 @@
 import Alert from "@mui/material/Alert";
 import Card from "@mui/material/Card";
-import LinearProgress from "@mui/material/LinearProgress";
-import TablePagination from "@mui/material/TablePagination";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
@@ -20,7 +18,6 @@ export function UsersPage() {
   const currentUser = useAppSelector(selectCurrentUser);
   const notify = useNotify();
 
-  // MUI's pagination counts pages from 0; the API counts from 1.
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [viewingId, setViewingId] = useState<string | null>(null);
@@ -71,25 +68,23 @@ export function UsersPage() {
 
       {page && currentUser && (
         <Card>
-          {users.isFetching && <LinearProgress />}
           <UsersTable
             users={page.items}
             currentUserId={currentUser.id}
             updatingId={updateUser.isPending ? (updateUser.variables?.id ?? null) : null}
             onView={setViewingId}
             onUpdate={handleUpdate}
-          />
-          <TablePagination
-            component="div"
-            count={page.total}
-            page={pageIndex}
-            rowsPerPage={pageSize}
-            rowsPerPageOptions={PAGE_SIZE_OPTIONS}
-            labelRowsPerPage={USERS_MESSAGES.ROWS_PER_PAGE}
-            onPageChange={(_event, nextPage) => setPageIndex(nextPage)}
-            onRowsPerPageChange={(event) => {
-              setPageSize(Number(event.target.value));
-              setPageIndex(0);
+            isRefreshing={users.isFetching}
+            pagination={{
+              page: pageIndex,
+              pageSize,
+              total: page.total,
+              pageSizeOptions: PAGE_SIZE_OPTIONS,
+              onPageChange: setPageIndex,
+              onPageSizeChange: (nextSize) => {
+                setPageSize(nextSize);
+                setPageIndex(0);
+              },
             }}
           />
         </Card>

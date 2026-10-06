@@ -33,7 +33,6 @@ export const API_ENDPOINTS = {
     importSchemas: (id: string) => `/projects/${id}/import-schemas`,
   },
   IMPORT_SCHEMAS: {
-    // POST here creates a GLOBAL schema (admin only).
     GLOBAL: "/import-schemas",
     byId: (id: string) => `/import-schemas/${id}`,
   },

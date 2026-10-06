@@ -1,6 +1,6 @@
 import type { TextFieldProps } from "@mui/material/TextField";
 import type { ReactNode } from "react";
-import type { ImportStatus } from "./import.types";
+import type { ImportErrorSampleRow, ImportStage, ImportStatus } from "./import.types";
 import type { Project } from "./project.types";
 import type { FieldsDefinition } from "./schema.types";
 import type { DataTablePagination } from "./table.types";
@@ -180,4 +180,30 @@ export interface ImportStatusChipProps {
 
 export interface ImportHistoryTableProps {
   projectId: string;
+}
+
+export interface StatCardProps {
+  label: string;
+  value: ReactNode;
+  tone?: "default" | "success" | "error" | "warning";
+}
+
+export interface ImportStageTrackerProps {
+  status: ImportStatus;
+  stage: ImportStage | null;
+}
+
+export interface ImportProgressBarProps {
+  status: ImportStatus;
+  progressPercent: number;
+  bytesRead: number;
+  sizeBytes: number;
+}
+
+export interface ImportErrorSampleProps {
+  rows: ImportErrorSampleRow[];
+}
+
+export interface ImportLoadErrorProps {
+  error: unknown;
 }

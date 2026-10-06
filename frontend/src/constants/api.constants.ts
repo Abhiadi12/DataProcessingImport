@@ -40,6 +40,8 @@ export const API_ENDPOINTS = {
   },
   IMPORTS: {
     start: (id: string) => `/imports/${id}/start`,
+    byId: (id: string) => `/imports/${id}`,
+    progress: (id: string) => `/imports/${id}/progress`,
   },
 } as const;
 

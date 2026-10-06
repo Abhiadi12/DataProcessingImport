@@ -18,6 +18,8 @@ export const QUERY_KEYS = {
   IMPORT_SCHEMA_DETAIL: ["import-schemas", "detail"],
   IMPORTS_ALL: ["imports"],
   IMPORTS_LIST: ["imports", "list"],
+  IMPORT_DETAIL: ["imports", "detail"],
+  IMPORT_PROGRESS: ["imports", "progress"],
 } as const;
 
 export const QUERY_DEFAULTS = {
@@ -28,3 +30,5 @@ export const QUERY_DEFAULTS = {
 export const HEALTH_POLL_INTERVAL_MS = 30_000;
 
 export const IMPORTS_POLL_INTERVAL_MS = 5_000;
+
+export const IMPORT_PROGRESS_POLL_INTERVAL_MS = 1_500;

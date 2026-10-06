@@ -1,4 +1,4 @@
-import type { ImportStatus, UploadStep } from "@/types";
+import type { ImportStage, ImportStatus, UploadStep } from "@/types";
 
 // Mirrors backend/src/constants/storage.constants.ts and MAX_UPLOAD_BYTES in
 // its env config. The backend is the real check; these let the form refuse a
@@ -54,3 +54,11 @@ export const ACTIVE_IMPORT_STATUSES: readonly ImportStatus[] = [
 
 // Value of the status filter's "show everything" option.
 export const ALL_STATUSES = "ALL";
+
+// The pipeline's stages, in the order the worker goes through them.
+export const IMPORT_STAGES: readonly ImportStage[] = [
+  "FILE_VALIDATION",
+  "SCHEMA_VALIDATION",
+  "IMPORTING",
+  "REPORT_GENERATION",
+];

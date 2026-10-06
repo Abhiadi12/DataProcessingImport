@@ -40,6 +40,46 @@ export interface ImportListItem extends ImportRecord {
   hasErrorReport: boolean;
 }
 
+export interface ImportRowProblem {
+  field: string;
+  message: string;
+}
+
+// One failed row, as stored by the worker.
+export interface ImportErrorSampleRow {
+  rowNumber: number;
+  rawRow: string;
+  errors: ImportRowProblem[];
+}
+
+// GET /imports/:id — the import, the joined names, and the first failed rows.
+export interface ImportDetail extends ImportRecord {
+  schemaName: string;
+  uploadedByName: string;
+  errorSample: ImportErrorSampleRow[];
+  hasErrorReport: boolean;
+}
+
+// GET /imports/:id/progress — the live numbers. While the import runs they
+// come from Redis and are ahead of what the database (and so ImportDetail)
+// holds; once it finishes the two agree.
+export interface ImportProgress {
+  importId: string;
+  status: ImportStatus;
+  stage: ImportStage | null;
+  // Bytes read ÷ file size — the row count is unknown until the end.
+  progressPercent: number;
+  bytesRead: number;
+  sizeBytes: number;
+  processed: number;
+  successful: number;
+  failed: number;
+  duplicates: number;
+  totalRows: number | null;
+  rowsPerSecond: number | null;
+  source: "redis" | "database";
+}
+
 export interface ImportListParams extends PaginationParams {
   // Omit to list imports in every status.
   status?: ImportStatus;

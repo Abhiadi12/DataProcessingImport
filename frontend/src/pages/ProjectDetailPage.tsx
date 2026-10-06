@@ -6,8 +6,8 @@ import Tabs from "@mui/material/Tabs";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
 import { Link as RouterLink, useNavigate, useParams, useSearchParams } from "react-router";
-import { EmptyState } from "@/components/common/EmptyState";
 import { PageLoader } from "@/components/common/PageLoader";
+import { ImportsPanel } from "@/components/import/ImportsPanel";
 import { DeleteProjectDialog } from "@/components/project/DeleteProjectDialog";
 import { MembersPanel } from "@/components/project/MembersPanel";
 import { NonMemberProjectView } from "@/components/project/NonMemberProjectView";
@@ -30,15 +30,10 @@ import type { Project } from "@/types";
 import { getApiErrorStatus } from "@/utils/api-error";
 import { hasRole } from "@/utils/role";
 
-// placeholder is only for tabs that have no real panel yet.
 const TABS = [
-  { value: PROJECT_TABS.MEMBERS, label: PROJECTS_MESSAGES.TAB_MEMBERS, placeholder: "" },
-  { value: PROJECT_TABS.SCHEMAS, label: PROJECTS_MESSAGES.TAB_SCHEMAS, placeholder: "" },
-  {
-    value: PROJECT_TABS.IMPORTS,
-    label: PROJECTS_MESSAGES.TAB_IMPORTS,
-    placeholder: PROJECTS_MESSAGES.IMPORTS_PLACEHOLDER,
-  },
+  { value: PROJECT_TABS.MEMBERS, label: PROJECTS_MESSAGES.TAB_MEMBERS },
+  { value: PROJECT_TABS.SCHEMAS, label: PROJECTS_MESSAGES.TAB_SCHEMAS },
+  { value: PROJECT_TABS.IMPORTS, label: PROJECTS_MESSAGES.TAB_IMPORTS },
 ];
 
 export function ProjectDetailPage() {
@@ -132,9 +127,7 @@ export function ProjectDetailPage() {
           {activeTab.value === PROJECT_TABS.SCHEMAS && (
             <SchemasPanel projectId={project.id} canManage={canManage} />
           )}
-          {activeTab.value === PROJECT_TABS.IMPORTS && (
-            <EmptyState title={activeTab.label} description={activeTab.placeholder} />
-          )}
+          {activeTab.value === PROJECT_TABS.IMPORTS && <ImportsPanel projectId={project.id} />}
         </div>
       </Card>
 

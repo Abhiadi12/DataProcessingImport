@@ -1,4 +1,5 @@
 export * as v1AuthController from "./v1/auth.controller.js";
+export * as v1DashboardController from "./v1/dashboard.controller.js";
 export * as v1ImportController from "./v1/import.controller.js";
 export * as v1ImportSchemaController from "./v1/import-schema.controller.js";
 export * as v1ProjectController from "./v1/project.controller.js";

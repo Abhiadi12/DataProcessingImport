@@ -95,6 +95,11 @@ export const IMPORT_MESSAGES = {
     `The file is missing required column(s): ${names.join(", ")}`,
   COMPLETED: "Import completed",
   ALREADY_STARTED: "This import has already been started",
+  attemptsExhausted: (attempts: number, reason: string) =>
+    `Failed after ${attempts} attempts: ${reason}`,
+  NOT_RETRYABLE: "Only a failed or cancelled import can be retried",
+  RETRY_FORBIDDEN: "You can only retry imports you uploaded",
+  RETRY_STARTED: "Import queued for another attempt",
   NOT_CANCELLABLE: "This import has already finished and cannot be cancelled",
   CANCELLED: "Import cancellation requested",
   NO_ERROR_REPORT: "This import has no error report",
@@ -139,4 +144,9 @@ export const STORAGE_MESSAGES = {
 export const IDEMPOTENCY_MESSAGES = {
   KEY_REUSED: "This Idempotency-Key was already used with a different request body",
   IN_FLIGHT: "A request with this Idempotency-Key is still being processed; retry shortly",
+} as const;
+
+export const DASHBOARD_MESSAGES = {
+  FETCHED: "Dashboard fetched",
+  ADMIN_FETCHED: "Admin dashboard fetched",
 } as const;

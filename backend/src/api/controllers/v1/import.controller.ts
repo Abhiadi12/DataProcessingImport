@@ -118,3 +118,15 @@ export async function downloadErrorReport(
     next(error);
   }
 }
+
+export async function retryImport(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    if (!req.user) throw new UnauthorizedError(AUTH_MESSAGES.NOT_AUTHENTICATED);
+    const { id } = req.validatedParams as ImportIdParam;
+    const record = await container.importService.retry(req.user, id, req.requestId);
+    // 202, like start(): accepted and queued, not finished.
+    res.status(202).json(ok(IMPORT_MESSAGES.RETRY_STARTED, record));
+  } catch (error) {
+    next(error);
+  }
+}

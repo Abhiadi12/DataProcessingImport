@@ -218,6 +218,60 @@ export class ImportRepository {
     });
   }
 
+  /**
+   * PROCESSING -> QUEUED after a failed attempt whose retry has been scheduled.
+   *
+   * Without this the row would sit at PROCESSING with no worker owning it, and
+   * the eventual redelivery would fail the conditional claim and be dropped.
+   */
+  async requeueForRetry(id: string, attempt: number): Promise<void> {
+    await this.prisma.import.update({
+      where: { id },
+      // `attempt` is recorded here as well as carried on the message. The
+      // message is the source of truth for routing, but without writing it back
+      // the row would say attempt=0 after three automatic retries — so the
+      // details page and the DLQ investigation would both lie about what
+      // happened.
+      data: { status: ImportStatus.QUEUED, stage: null, attempt, queuedAt: new Date() },
+    });
+  }
+
+  /**
+   * Full reset for a MANUAL retry, in one statement.
+   *
+   * Counters go back to zero and `attempt` increments. The caller must also
+   * delete this import's rows from imported_records and import_errors first —
+   * otherwise every re-run reports successful=0 with everything counted as a
+   * duplicate of its own previous attempt, which is true but useless.
+   * See docs/IDEMPOTENCY.md.
+   */
+  /** Persist the attempt number reached, so a dead-lettered import says so. */
+  async recordAttempt(id: string, attempt: number): Promise<void> {
+    await this.prisma.import.update({ where: { id }, data: { attempt } });
+  }
+
+  async resetForRetry(id: string): Promise<Import> {
+    return this.prisma.import.update({
+      where: { id },
+      data: {
+        status: ImportStatus.QUEUED,
+        stage: null,
+        attempt: { increment: 1 },
+        failureReason: null,
+        totalRows: null,
+        processedRows: 0,
+        successfulRows: 0,
+        failedRows: 0,
+        duplicateRows: 0,
+        bytesRead: BigInt(0),
+        errorReportKey: null,
+        queuedAt: new Date(),
+        startedAt: null,
+        completedAt: null,
+      },
+    });
+  }
+
   async claimForProcessing(id: string): Promise<boolean> {
     const { count } = await this.prisma.import.updateMany({
       where: { id, status: ImportStatus.QUEUED },

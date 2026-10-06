@@ -1,5 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { ImportStatus, Role, type ImportStatus as ImportStatusType } from "@prisma/client";
+import {
+  ImportStage,
+  ImportStatus,
+  Role,
+  type ImportStatus as ImportStatusType,
+} from "@prisma/client";
 import { env } from "../../config/env.js";
 import {
   IMPORT_ERROR_PAGE_SIZE,
@@ -300,6 +305,34 @@ export class ImportService {
     const filename = `${record.filename.replace(/\.[^.]+$/, "")}-errors.csv`;
     const url = await this.storageService.presignGet(record.errorReportKey, filename);
     return { url, filename, expiresIn: env.PRESIGN_EXPIRY_SECONDS };
+  }
+
+  async retry(user: AuthenticatedUser, importId: string, requestId: string): Promise<ImportView> {
+    const record = await this.requireAccessibleImport(user, importId);
+
+    if (record.status !== ImportStatus.FAILED && record.status !== ImportStatus.CANCELLED) {
+      throw new ConflictError(IMPORT_MESSAGES.NOT_RETRYABLE);
+    }
+
+    if (ROLE_RANK[user.role] < ROLE_RANK[Role.MANAGER] && record.uploadedById !== user.id) {
+      throw new ForbiddenError(IMPORT_MESSAGES.RETRY_FORBIDDEN);
+    }
+
+    await this.importRecordRepository.deleteByImport(importId);
+
+    const reset = await this.importRepository.resetForRetry(importId);
+    await this.importProgressService.start(importId, ImportStage.FILE_VALIDATION);
+    await this.importProgressService.clearCancel(importId);
+
+    try {
+      await this.importPublisher.publish({ importId, attempt: reset.attempt, requestId });
+    } catch (error) {
+      await this.importRepository.markFailed(importId, IMPORT_MESSAGES.NOT_RETRYABLE);
+      throw error;
+    }
+
+    logger.info({ importId, attempt: reset.attempt, requestId }, "Import retry queued");
+    return toImportView(reset);
   }
 
   private async requireUsableSchema(projectId: string, schemaId: string): Promise<void> {

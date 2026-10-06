@@ -19,6 +19,7 @@ export default defineConfig({
       S3_SECRET_KEY: "test-secret-key",
       S3_BUCKET: "test-bucket",
       RABBITMQ_URL: "amqp://test:test@localhost:5672",
+      REDIS_URL: "redis://localhost:6379",
     },
     restoreMocks: true,
     coverage: {

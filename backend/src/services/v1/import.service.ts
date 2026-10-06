@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { ImportStatus, Role } from "@prisma/client";
+import { ImportStatus, Role, type ImportStatus as ImportStatusType } from "@prisma/client";
 import { env } from "../../config/env.js";
 import {
+  IMPORT_ERROR_PAGE_SIZE,
   IMPORT_MESSAGES,
   PROJECT_MESSAGES,
   ROLE_RANK,
@@ -12,23 +13,54 @@ import { ConflictError } from "../../errors/conflict.error.js";
 import { ForbiddenError } from "../../errors/forbidden.error.js";
 import { NotFoundError } from "../../errors/not-found.error.js";
 import type { ImportPublisher } from "../../queue/import-publisher.js";
+import type { ImportProgressService } from "./import-progress.service.js";
 import type { ImportRepository } from "../../repositories/v1/import.repository.js";
+import type { ImportRecordRepository } from "../../repositories/v1/import-record.repository.js";
 import type { ImportSchemaRepository } from "../../repositories/v1/import-schema.repository.js";
 import type { ProjectRepository } from "../../repositories/v1/project.repository.js";
 import { allowedExtensionFor } from "../../utils/filename.js";
 import { logger } from "../../utils/logger.js";
 import type { CreateImportBody } from "../../api/schemas/v1/import.schema.js";
+import type { Paginated } from "../../types/pagination.js";
 import type { AuthenticatedUser } from "./auth.service.js";
-import { toImportView, type ImportView, type PreparedUploadView } from "./import.mapper.js";
+import {
+  percentOf,
+  toImportView,
+  type ImportDetailView,
+  type ImportProgressView,
+  type ImportView,
+  type PreparedUploadView,
+} from "./import.mapper.js";
 import type { StorageService } from "./storage.service.js";
+
+export interface ListImportsInput {
+  page: number;
+  limit: number;
+  /** `| undefined` because zod emits the property as present-but-undefined. */
+  status?: ImportStatusType | undefined;
+}
+
+export interface ImportDetailSummary extends ImportView {
+  schemaName: string;
+  uploadedByName: string;
+  hasErrorReport: boolean;
+}
+
+export interface DownloadView {
+  url: string;
+  filename: string;
+  expiresIn: number;
+}
 
 export class ImportService {
   constructor(
     private readonly importRepository: ImportRepository,
+    private readonly importRecordRepository: ImportRecordRepository,
     private readonly importSchemaRepository: ImportSchemaRepository,
     private readonly projectRepository: ProjectRepository,
     private readonly storageService: StorageService,
     private readonly importPublisher: ImportPublisher,
+    private readonly importProgressService: ImportProgressService,
   ) {}
 
   /**
@@ -146,13 +178,130 @@ export class ImportService {
     return toImportView(queued);
   }
 
-  /**
-   * The schema must exist, be live, and be reachable from this project — a
-   * global schema (null projectId) or this project's own.
-   *
-   * Checked here rather than left to the foreign key because an FK can only say
-   * "no such row"; these three failures deserve three different messages.
-   */
+  /** Paginated history for a project. Membership is enforced by the route. */
+  async list(
+    projectId: string,
+    { page, limit, status }: ListImportsInput,
+  ): Promise<Paginated<ImportDetailSummary>> {
+    const { imports, total } = await this.importRepository.listForProject(projectId, {
+      skip: (page - 1) * limit,
+      take: limit,
+      ...(status === undefined ? {} : { status }),
+    });
+
+    return {
+      items: imports.map((record) => ({
+        ...toImportView(record),
+        schemaName: record.schema.name,
+        uploadedByName: record.uploadedBy.name,
+        hasErrorReport: record.errorReportKey !== null,
+      })),
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  /** One import, with the names and the first errors the details page needs. */
+  async getDetail(user: AuthenticatedUser, importId: string): Promise<ImportDetailView> {
+    await this.requireAccessibleImport(user, importId);
+
+    const record = await this.importRepository.findDetailById(importId);
+    if (!record) throw new NotFoundError(IMPORT_MESSAGES.NOT_FOUND);
+
+    const errorSample = await this.importRecordRepository.listErrors(
+      importId,
+      IMPORT_ERROR_PAGE_SIZE,
+    );
+
+    return {
+      ...toImportView(record),
+      schemaName: record.schema.name,
+      uploadedByName: record.uploadedBy.name,
+      errorSample,
+      hasErrorReport: record.errorReportKey !== null,
+    };
+  }
+
+  async getProgress(user: AuthenticatedUser, importId: string): Promise<ImportProgressView> {
+    const record = await this.requireAccessibleImport(user, importId);
+    const live = await this.importProgressService.read(importId);
+
+    const terminal =
+      record.status === ImportStatus.COMPLETED ||
+      record.status === ImportStatus.FAILED ||
+      record.status === ImportStatus.CANCELLED;
+
+    const useRedis = live !== null && !terminal;
+    const sizeBytes = Number(record.sizeBytes);
+    const bytesRead = useRedis ? live.bytesRead : Number(record.bytesRead);
+    const processed = useRedis ? live.processed : record.processedRows;
+
+    const elapsedMs = record.startedAt
+      ? (record.completedAt?.getTime() ?? Date.now()) - record.startedAt.getTime()
+      : 0;
+
+    return {
+      importId,
+      status: record.status,
+      stage: useRedis ? live.stage : record.stage,
+      progressPercent: percentOf(bytesRead, sizeBytes),
+      bytesRead,
+      sizeBytes,
+      processed,
+      successful: useRedis ? live.successful : record.successfulRows,
+      failed: useRedis ? live.failed : record.failedRows,
+      duplicates: useRedis ? live.duplicates : record.duplicateRows,
+      totalRows: record.totalRows,
+      rowsPerSecond: elapsedMs > 0 ? Math.round(processed / (elapsedMs / 1000)) : null,
+      source: useRedis ? "redis" : "database",
+    };
+  }
+
+  async cancel(user: AuthenticatedUser, importId: string): Promise<ImportView> {
+    const record = await this.requireAccessibleImport(user, importId);
+
+    if (
+      record.status === ImportStatus.COMPLETED ||
+      record.status === ImportStatus.FAILED ||
+      record.status === ImportStatus.CANCELLED
+    ) {
+      throw new ConflictError(IMPORT_MESSAGES.NOT_CANCELLABLE);
+    }
+
+    if (record.status === ImportStatus.UPLOADING || record.status === ImportStatus.QUEUED) {
+      const cancelled = await this.importRepository.cancelQueued(importId);
+      if (!cancelled && record.status === ImportStatus.QUEUED) {
+        await this.importProgressService.requestCancel(importId);
+      }
+    } else {
+      await this.importProgressService.requestCancel(importId);
+    }
+
+    logger.info({ importId, previousStatus: record.status }, "Import cancellation requested");
+
+    const updated = await this.importRepository.findById(importId);
+    if (!updated) throw new NotFoundError(IMPORT_MESSAGES.NOT_FOUND);
+    return toImportView(updated);
+  }
+
+  async getDownloadUrl(user: AuthenticatedUser, importId: string): Promise<DownloadView> {
+    const record = await this.requireAccessibleImport(user, importId);
+    const url = await this.storageService.presignGet(record.objectKey, record.filename);
+    return { url, filename: record.filename, expiresIn: env.PRESIGN_EXPIRY_SECONDS };
+  }
+
+  async getErrorReportUrl(user: AuthenticatedUser, importId: string): Promise<DownloadView> {
+    const record = await this.requireAccessibleImport(user, importId);
+    if (!record.errorReportKey) {
+      throw new NotFoundError(IMPORT_MESSAGES.NO_ERROR_REPORT);
+    }
+    const filename = `${record.filename.replace(/\.[^.]+$/, "")}-errors.csv`;
+    const url = await this.storageService.presignGet(record.errorReportKey, filename);
+    return { url, filename, expiresIn: env.PRESIGN_EXPIRY_SECONDS };
+  }
+
   private async requireUsableSchema(projectId: string, schemaId: string): Promise<void> {
     const schema = await this.importSchemaRepository.findById(schemaId);
     if (!schema) {
@@ -166,11 +315,6 @@ export class ImportService {
     }
   }
 
-  /**
-   * Access check for the flat `/imports/:id` routes, which carry no projectId
-   * for `requireProjectAccess` to read. Any member of the owning project may act
-   * on its imports; ADMIN bypasses membership as everywhere else.
-   */
   private async requireAccessibleImport(user: AuthenticatedUser, importId: string) {
     const record = await this.importRepository.findById(importId);
     if (!record) {

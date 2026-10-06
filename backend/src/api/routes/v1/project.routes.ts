@@ -8,6 +8,7 @@ import {
 import { authenticate } from "../../middlewares/authenticate.middleware.js";
 import { requireProjectAccess } from "../../middlewares/require-project-access.middleware.js";
 import { requireRole } from "../../middlewares/require-role.middleware.js";
+import { idempotency } from "../../middlewares/idempotency.middleware.js";
 import { validate } from "../../middlewares/validate.middleware.js";
 import {
   createProjectSchema,
@@ -21,7 +22,7 @@ import {
   createImportSchemaSchema,
   listImportSchemasQuerySchema,
 } from "../../schemas/v1/import-schema.schema.js";
-import { createImportSchema } from "../../schemas/v1/import.schema.js";
+import { createImportSchema, listImportsQuerySchema } from "../../schemas/v1/import.schema.js";
 
 export const projectRouter = Router();
 
@@ -122,5 +123,14 @@ projectRouter.post(
   authenticate,
   validate({ params: projectIdParamSchema, body: createImportSchema }),
   requireProjectAccess(),
+  idempotency("POST /api/v1/projects/:id/imports"),
   v1ImportController.prepareUpload,
+);
+
+projectRouter.get(
+  "/:id/imports",
+  authenticate,
+  validate({ params: projectIdParamSchema, query: listImportsQuerySchema }),
+  requireProjectAccess(),
+  v1ImportController.listImports,
 );

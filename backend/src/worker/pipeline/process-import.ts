@@ -58,8 +58,13 @@ class ByteCounter extends Transform {
  * split is the `isOperational` flag doing the job CLAUDE.md describes.
  */
 export async function processImport(job: ImportJobMessage): Promise<void> {
-  const { importRepository, importSchemaRepository, importRecordRepository, storageService } =
-    container;
+  const {
+    importRepository,
+    importSchemaRepository,
+    importRecordRepository,
+    storageService,
+    importProgressService,
+  } = container;
 
   // At-least-once delivery means this may be a redelivery of an import already
   // running, or one cancelled while queued. The conditional claim is the guard.
@@ -73,6 +78,12 @@ export async function processImport(job: ImportJobMessage): Promise<void> {
   }
 
   const log = logger.child({ importId: job.importId, requestId: job.requestId });
+
+  // Zeroed per ATTEMPT, so a retry does not inherit the previous run's numbers,
+  // and a cancel flag left over from an earlier attempt does not abort this one
+  // the moment it starts.
+  await importProgressService.start(job.importId, ImportStage.FILE_VALIDATION);
+  await importProgressService.clearCancel(job.importId);
 
   const record = await importRepository.findById(job.importId);
   if (!record) throw new NotFoundError(IMPORT_MESSAGES.NOT_FOUND);
@@ -108,10 +119,12 @@ export async function processImport(job: ImportJobMessage): Promise<void> {
     // A ranged read of the first 64KB, so a file missing a required column
     // fails in milliseconds instead of after streaming 2GB.
     await importRepository.setStage(record.id, ImportStage.SCHEMA_VALIDATION);
+    await importProgressService.setStage(record.id, ImportStage.SCHEMA_VALIDATION);
     await validateHeader(record.objectKey, compiled);
 
     // ---- Stage 3: IMPORTING -------------------------------------------------
     await importRepository.setStage(record.id, ImportStage.IMPORTING);
+    await importProgressService.setStage(record.id, ImportStage.IMPORTING);
 
     const source = await storageService.getObjectStream(record.objectKey);
     const counter = new ByteCounter();
@@ -135,9 +148,13 @@ export async function processImport(job: ImportJobMessage): Promise<void> {
       }),
     );
 
+    let cancelled = false;
     let batch: ImportRecordRow[] = [];
     let batchesSinceFlush = 0;
     let rowNumber = 0;
+    // What has already been reported to Redis, so each flush sends only the
+    // difference — HINCRBY is additive.
+    let reported = { processed: 0, successful: 0, failed: 0, duplicates: 0 };
 
     const flushBatch = async (): Promise<void> => {
       if (batch.length > 0) {
@@ -149,11 +166,29 @@ export async function processImport(job: ImportJobMessage): Promise<void> {
       }
 
       await errorReport.flushSample();
+      progress.bytesRead = counter.bytes;
 
+      // Redis every batch: cheap, one pipelined round trip, and what the
+      // progress endpoint reads.
+      await importProgressService.advance(record.id, {
+        processed: progress.processed - reported.processed,
+        successful: progress.successful - reported.successful,
+        failed: progress.failed - reported.failed,
+        duplicates: progress.duplicates - reported.duplicates,
+        bytesRead: progress.bytesRead,
+      });
+      reported = {
+        processed: progress.processed,
+        successful: progress.successful,
+        failed: progress.failed,
+        duplicates: progress.duplicates,
+      };
+
+      // Postgres only every Nth batch: it is the durable record, not the live
+      // display, so it does not need per-batch writes.
       batchesSinceFlush += 1;
       if (batchesSinceFlush >= COUNTER_FLUSH_EVERY_BATCHES) {
         batchesSinceFlush = 0;
-        progress.bytesRead = counter.bytes;
         await importRepository.updateProgress(record.id, progress);
       }
     };
@@ -190,6 +225,15 @@ export async function processImport(job: ImportJobMessage): Promise<void> {
 
       if (batch.length >= IMPORT_BATCH_SIZE) {
         await flushBatch();
+
+        // Checked BETWEEN batches, never mid-batch: stopping here leaves the
+        // database consistent, with every row from completed batches committed.
+        // Granularity is therefore one batch — with 5M rows that is ~5000
+        // checkpoints, so a cancel lands within about 1000 rows.
+        if (await importProgressService.isCancelRequested(record.id)) {
+          cancelled = true;
+          break;
+        }
       }
     }
 
@@ -199,6 +243,7 @@ export async function processImport(job: ImportJobMessage): Promise<void> {
 
     // ---- Stage 4: REPORT_GENERATION ----------------------------------------
     await importRepository.setStage(record.id, ImportStage.REPORT_GENERATION);
+    await importProgressService.setStage(record.id, ImportStage.REPORT_GENERATION);
     const errorReportKey = await errorReport.finish();
 
     // The identity that must always hold. Logged rather than thrown so a
@@ -208,6 +253,15 @@ export async function processImport(job: ImportJobMessage): Promise<void> {
         { progress },
         "Counter identity violated: processed != successful+failed+duplicates",
       );
+    }
+
+    if (cancelled) {
+      // Rows already inserted stay inserted — that is correct, not a leak: the
+      // user asked to stop, not to undo.
+      await importRepository.markCancelled(record.id, progress, errorReportKey);
+      await importProgressService.clearCancel(record.id);
+      log.info({ ...progress }, "Import cancelled mid-flight");
+      return;
     }
 
     await importRepository.markCompleted(record.id, progress, errorReportKey);

@@ -18,3 +18,5 @@ export const SCHEMA_DESCRIPTION_MAX_LENGTH = 500;
 
 export const SCHEMA_FIELD_NAME_MAX_LENGTH = 64;
 export const SCHEMA_MAX_FIELDS = 100;
+
+export const IMPORT_ERROR_PAGE_SIZE = 20;

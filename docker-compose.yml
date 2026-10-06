@@ -24,8 +24,8 @@ services:
       RUSTFS_REGION:
       RUSTFS_CORS_ALLOWED_ORIGINS: "http://localhost:5173"
     ports:
-      - "9000:9000" # S3 API — Express and the browser's presigned PUT target this
-      - "9001:9001" # web console — human access only, never used by the app
+      - "9000:9000"
+      - "9001:9001"
     volumes:
       - rustfs-data:/data
     healthcheck:
@@ -51,7 +51,21 @@ services:
       retries: 10
       start_period: 40s
 
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres-data:
   rustfs-data:
   rabbitmq-data:
+  redis-data:

@@ -95,6 +95,13 @@ export const IMPORT_MESSAGES = {
     `The file is missing required column(s): ${names.join(", ")}`,
   COMPLETED: "Import completed",
   ALREADY_STARTED: "This import has already been started",
+  NOT_CANCELLABLE: "This import has already finished and cannot be cancelled",
+  CANCELLED: "Import cancellation requested",
+  NO_ERROR_REPORT: "This import has no error report",
+  LIST_FETCHED: "Imports fetched",
+  FETCHED: "Import fetched",
+  PROGRESS_FETCHED: "Import progress fetched",
+  DOWNLOAD_READY: "Download link generated",
 } as const;
 
 export const IMPORT_SCHEMA_MESSAGES = {
@@ -127,4 +134,9 @@ export const STORAGE_MESSAGES = {
   LIST_FAILED: "Could not list objects in storage",
   GET_FAILED: "Could not read the object from storage",
   UPLOAD_FAILED: "Could not upload to storage",
+} as const;
+
+export const IDEMPOTENCY_MESSAGES = {
+  KEY_REUSED: "This Idempotency-Key was already used with a different request body",
+  IN_FLIGHT: "A request with this Idempotency-Key is still being processed; retry shortly",
 } as const;

@@ -23,18 +23,11 @@ export function ChangePasswordForm() {
     defaultValues: { currentPassword: "", newPassword: "", confirmNewPassword: "" },
   });
 
-  // Awaited rather than using mutate()'s onSuccess: a successful change clears
-  // the session, which unmounts this form, and React Query drops per-call
-  // callbacks of an unmounted component — the message would never show.
   const onSubmit = handleSubmit(async ({ confirmNewPassword: _confirmNewPassword, ...input }) => {
     try {
       const res = await changePassword.mutateAsync(input);
-      // The user lands on /login; the backend's message ("…Please log in
-      // again.") explains why.
       notify.success(res.message);
     } catch (error) {
-      // A wrong current password comes back as a 400 field error, not a 401,
-      // so it shows under the field instead of looking like an expired session.
       applyServerErrors(error, setError, ["currentPassword", "newPassword"]);
     }
   });

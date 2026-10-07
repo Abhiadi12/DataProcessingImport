@@ -123,3 +123,21 @@ export interface UploadAttempt {
   schemaId: string;
   key: string;
 }
+
+export interface ImportDownload {
+  url: string;
+  filename: string;
+  expiresIn: number;
+}
+
+export type ImportFileKind = "original" | "error-report";
+
+export interface DownloadImportVariables {
+  id: string;
+  kind: ImportFileKind;
+}
+
+export interface RetryImportVariables {
+  id: string;
+  idempotencyKey: string;
+}

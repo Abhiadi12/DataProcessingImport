@@ -8,6 +8,7 @@ import Typography from "@mui/material/Typography";
 import { Link as RouterLink, useParams } from "react-router";
 import { PageLoader } from "@/components/common/PageLoader";
 import { StatCard } from "@/components/common/StatCard";
+import { ImportActions } from "@/components/import/ImportActions";
 import { ImportErrorSample } from "@/components/import/ImportErrorSample";
 import { ImportLoadError } from "@/components/import/ImportLoadError";
 import { ImportProgressBar } from "@/components/import/ImportProgressBar";
@@ -67,11 +68,14 @@ export function ImportDetailPage() {
         >
           {IMPORT_DETAIL_MESSAGES.BACK}
         </Button>
-        <div className="flex flex-wrap items-center gap-3">
-          <Typography variant="h4" component="h1" className="font-semibold break-all">
-            {detail.filename}
-          </Typography>
-          <ImportStatusChip status={status} />
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <Typography variant="h4" component="h1" className="font-semibold break-all">
+              {detail.filename}
+            </Typography>
+            <ImportStatusChip status={status} />
+          </div>
+          <ImportActions detail={detail} status={status} />
         </div>
       </div>
 

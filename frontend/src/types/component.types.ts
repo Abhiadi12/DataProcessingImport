@@ -1,6 +1,6 @@
 import type { TextFieldProps } from "@mui/material/TextField";
 import type { ReactNode } from "react";
-import type { ImportErrorSampleRow, ImportStage, ImportStatus } from "./import.types";
+import type { ImportDetail, ImportErrorSampleRow, ImportStage, ImportStatus } from "./import.types";
 import type { Project } from "./project.types";
 import type { FieldsDefinition } from "./schema.types";
 import type { DataTablePagination } from "./table.types";
@@ -45,6 +45,8 @@ export interface ConfirmDialogProps {
   title: string;
   description: string;
   confirmLabel: string;
+  // Label of the "don't do it" button. Defaults to "Cancel".
+  cancelLabel?: string;
   // Red confirm button, for deletes.
   destructive?: boolean;
   onConfirm: () => void;
@@ -206,4 +208,9 @@ export interface ImportErrorSampleProps {
 
 export interface ImportLoadErrorProps {
   error: unknown;
+}
+
+export interface ImportActionsProps {
+  detail: ImportDetail;
+  status: ImportStatus;
 }

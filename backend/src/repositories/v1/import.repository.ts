@@ -169,16 +169,22 @@ export class ImportRepository {
   }
 
   /**
-   * Cancel an import no worker has claimed yet.
+   * Cancel an import no worker has claimed yet: one still awaiting its upload
+   * (UPLOADING) or waiting in the queue (QUEUED).
    *
-   * Conditional on QUEUED so it cannot race a worker claiming it at the same
-   * moment — exactly one of the two wins. The queue MESSAGE is deliberately left
-   * in place: RabbitMQ has no "delete one message" operation, so this row acts
-   * as a tombstone and the worker's claim will refuse it and ack.
+   * Conditional on those two statuses so it cannot race the transition out of
+   * them — `markQueued` moving UPLOADING on, or a worker claiming QUEUED — and
+   * exactly one side wins. For a QUEUED row the queue MESSAGE is deliberately
+   * left in place: RabbitMQ has no "delete one message" operation, so this row
+   * acts as a tombstone and the worker's claim will refuse it and ack.
+   *
+   * UPLOADING used to be left out, so cancelling an upload that was never
+   * started answered 202 and changed nothing — the row stayed UPLOADING (and
+   * counted as an active import) forever.
    */
-  async cancelQueued(id: string): Promise<boolean> {
+  async cancelUnclaimed(id: string): Promise<boolean> {
     const { count } = await this.prisma.import.updateMany({
-      where: { id, status: ImportStatus.QUEUED },
+      where: { id, status: { in: [ImportStatus.UPLOADING, ImportStatus.QUEUED] } },
       data: { status: ImportStatus.CANCELLED, completedAt: new Date() },
     });
     return count === 1;

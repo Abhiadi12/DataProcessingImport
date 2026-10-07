@@ -14,6 +14,7 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
+  cancelLabel = COMMON_MESSAGES.CANCEL,
   destructive = false,
   onConfirm,
   onCancel,
@@ -25,7 +26,7 @@ export function ConfirmDialog({
         <DialogContentText>{description}</DialogContentText>
       </DialogContent>
       <DialogActions className="px-6 pb-4">
-        <Button onClick={onCancel}>{COMMON_MESSAGES.CANCEL}</Button>
+        <Button onClick={onCancel}>{cancelLabel}</Button>
         <Button variant="contained" color={destructive ? "error" : "primary"} onClick={onConfirm}>
           {confirmLabel}
         </Button>

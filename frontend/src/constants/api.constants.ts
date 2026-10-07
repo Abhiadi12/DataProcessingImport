@@ -42,6 +42,10 @@ export const API_ENDPOINTS = {
     start: (id: string) => `/imports/${id}/start`,
     byId: (id: string) => `/imports/${id}`,
     progress: (id: string) => `/imports/${id}/progress`,
+    cancel: (id: string) => `/imports/${id}/cancel`,
+    retry: (id: string) => `/imports/${id}/retry`,
+    download: (id: string) => `/imports/${id}/download`,
+    errorReport: (id: string) => `/imports/${id}/error-report`,
   },
 } as const;
 

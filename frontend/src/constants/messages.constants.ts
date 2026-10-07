@@ -328,6 +328,24 @@ export const IMPORT_DETAIL_MESSAGES = {
   fieldProblem: (field: string, message: string) => `${field}: ${message}`,
 } as const;
 
+export const IMPORT_ACTION_MESSAGES = {
+  ACTIONS_LABEL: "Import actions",
+  CANCEL: "Cancel import",
+  CANCELLING: "Cancelling…",
+  CANCEL_TITLE: "Cancel this import?",
+  CANCEL_WARNING:
+    "The import stops as soon as the worker finishes its current batch. Rows already imported are kept.",
+  CANCEL_CONFIRM: "Cancel import",
+  KEEP_RUNNING: "Keep running",
+  RETRY: "Retry import",
+  RETRY_TITLE: "Run this import again?",
+  RETRY_WARNING:
+    "The file is read again from the beginning. Rows this import added earlier are removed first, so nothing is imported twice.",
+  RETRY_CONFIRM: "Retry import",
+  DOWNLOAD_ORIGINAL: "Download file",
+  DOWNLOAD_ERRORS: "Download error report",
+} as const;
+
 export const FILE_INPUT_MESSAGES = {
   CHOOSE: "Choose file",
   CHANGE: "Change file",

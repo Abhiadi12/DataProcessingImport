@@ -6,6 +6,7 @@ import {
   API_ENDPOINTS,
   DEFAULT_PAGE_SIZE,
   IDEMPOTENCY_HEADER,
+  IMPORT_FILE_KIND,
   IMPORT_PROGRESS_POLL_INTERVAL_MS,
   IMPORTS_POLL_INTERVAL_MS,
   QUERY_KEYS,
@@ -14,7 +15,9 @@ import {
 import { useAxios } from "@/hooks/useAxios";
 import type {
   ApiResponse,
+  DownloadImportVariables,
   ImportDetail,
+  ImportDownload,
   ImportListItem,
   ImportListParams,
   ImportProgress,
@@ -23,9 +26,11 @@ import type {
   PaginatedData,
   PreparedUpload,
   PrepareUploadInput,
+  RetryImportVariables,
   UploadImportVariables,
   UploadStep,
 } from "@/types";
+import { triggerDownload } from "@/utils/download";
 import { importContentTypeOf } from "@/utils/file";
 
 export const useGetProjectImports = (
@@ -111,6 +116,65 @@ export const useRefreshWhenImportFinishes = (liveStatus: ImportStatus | undefine
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.IMPORTS_ALL });
     }
   }, [hasFinished, queryClient]);
+};
+
+export const useCancelImport = () => {
+  const axios = useAxios();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await axios.post<ApiResponse<ImportRecord>>(API_ENDPOINTS.IMPORTS.cancel(id));
+      return res.data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.IMPORTS_ALL }),
+  });
+};
+
+// Runs a failed or cancelled import again, from the first row. Allowed for
+// the person who uploaded it and for managers and admins. Re-fetching
+// everything afterwards also restarts the progress poll, which had stopped
+// when the import finished.
+export const useRetryImport = () => {
+  const axios = useAxios();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, idempotencyKey }: RetryImportVariables) => {
+      const res = await axios.post<ApiResponse<ImportRecord>>(
+        API_ENDPOINTS.IMPORTS.retry(id),
+        undefined,
+        // A double-click or a network retry must not queue the import twice.
+        { headers: { [IDEMPOTENCY_HEADER]: idempotencyKey } },
+      );
+      return res.data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.IMPORTS_ALL }),
+  });
+};
+
+// Downloads the original file or the error report. The API does not send the
+// file: it returns a link to object storage that is valid for a few minutes,
+// and the browser downloads from storage directly. So the link is fetched
+// fresh on every click and never kept.
+export const useDownloadImportFile = () => {
+  const axios = useAxios();
+
+  return useMutation({
+    mutationFn: async ({ id, kind }: DownloadImportVariables) => {
+      const endpoint =
+        kind === IMPORT_FILE_KIND.ERROR_REPORT
+          ? API_ENDPOINTS.IMPORTS.errorReport(id)
+          : API_ENDPOINTS.IMPORTS.download(id);
+      const res = await axios.get<ApiResponse<ImportDownload>>(endpoint);
+      return res.data;
+    },
+    onSuccess: (res) => {
+      if (res.data) {
+        triggerDownload(res.data.url, res.data.filename);
+      }
+    },
+  });
 };
 
 export const useUploadImport = () => {

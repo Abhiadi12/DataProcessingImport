@@ -1,4 +1,4 @@
-import type { ImportStage, ImportStatus, UploadStep } from "@/types";
+import type { ImportFileKind, ImportStage, ImportStatus, UploadStep } from "@/types";
 
 // Mirrors backend/src/constants/storage.constants.ts and MAX_UPLOAD_BYTES in
 // its env config. The backend is the real check; these let the form refuse a
@@ -62,3 +62,14 @@ export const IMPORT_STAGES: readonly ImportStage[] = [
   "IMPORTING",
   "REPORT_GENERATION",
 ];
+
+// Only a finished-badly import can be run again (the API refuses the rest).
+export const RETRYABLE_IMPORT_STATUSES: readonly ImportStatus[] = [
+  IMPORT_STATUS.FAILED,
+  IMPORT_STATUS.CANCELLED,
+];
+
+export const IMPORT_FILE_KIND = {
+  ORIGINAL: "original",
+  ERROR_REPORT: "error-report",
+} as const satisfies Record<string, ImportFileKind>;

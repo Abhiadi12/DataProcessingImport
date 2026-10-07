@@ -5,6 +5,7 @@ import { AppLayout } from "@/components/common/AppLayout";
 import { AppSnackbar } from "@/components/common/AppSnackbar";
 import { ROLE, ROUTES } from "@/constants";
 import { useRestoreSession } from "@/hooks/useRestoreSession";
+import { AdminDashboardPage } from "@/pages/AdminDashboardPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { ImportDetailPage } from "@/pages/ImportDetailPage";
 import { LoginPage } from "@/pages/LoginPage";
@@ -35,6 +36,7 @@ export function App() {
             <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
             <Route element={<RequireAuth minimumRole={ROLE.ADMIN} />}>
               <Route path={ROUTES.USERS} element={<UsersPage />} />
+              <Route path={ROUTES.ADMIN_DASHBOARD} element={<AdminDashboardPage />} />
             </Route>
           </Route>
           <Route path={ROUTES.NOT_FOUND} element={<NotFoundPage />} />

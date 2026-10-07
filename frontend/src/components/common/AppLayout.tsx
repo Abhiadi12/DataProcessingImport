@@ -42,6 +42,11 @@ export function AppLayout() {
               {NAV_MESSAGES.USERS}
             </Button>
           )}
+          {user?.role === ROLE.ADMIN && (
+            <Button component={NavLink} to={ROUTES.ADMIN_DASHBOARD} color="inherit">
+              {NAV_MESSAGES.ADMIN}
+            </Button>
+          )}
           <div className="ml-auto flex items-center gap-3">
             <ApiStatusChip />
             <UserMenu />

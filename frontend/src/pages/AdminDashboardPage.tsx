@@ -4,13 +4,15 @@ import Typography from "@mui/material/Typography";
 import { PageLoader } from "@/components/common/PageLoader";
 import { ImportTotalsCards } from "@/components/dashboard/ImportTotalsCards";
 import { ProcessingSpeed } from "@/components/dashboard/ProcessingSpeed";
+import { QueueHealth } from "@/components/dashboard/QueueHealth";
 import { RecentImportsTable } from "@/components/dashboard/RecentImportsTable";
-import { DASHBOARD_MESSAGES } from "@/constants";
-import { useGetDashboard } from "@/service/dashboard.service";
+import { SystemCountsCards } from "@/components/dashboard/SystemCountsCards";
+import { ADMIN_DASHBOARD_MESSAGES, DASHBOARD_MESSAGES } from "@/constants";
+import { useGetAdminDashboard } from "@/service/dashboard.service";
 import { getApiErrorMessage } from "@/utils/api-error";
 
-export function DashboardPage() {
-  const { data, isPending, isError, error } = useGetDashboard();
+export function AdminDashboardPage() {
+  const { data, isPending, isError, error } = useGetAdminDashboard();
   const dashboard = data?.data;
 
   if (isPending) {
@@ -25,17 +27,16 @@ export function DashboardPage() {
     <div className="flex flex-col gap-6">
       <div>
         <Typography variant="h4" component="h1" className="font-semibold">
-          {DASHBOARD_MESSAGES.TITLE}
+          {ADMIN_DASHBOARD_MESSAGES.TITLE}
         </Typography>
         <Typography color="text.secondary" className="mt-1">
-          {dashboard.scope === "all-projects"
-            ? DASHBOARD_MESSAGES.SCOPE_ALL
-            : DASHBOARD_MESSAGES.SCOPE_MINE}
+          {ADMIN_DASHBOARD_MESSAGES.SUBTITLE}
         </Typography>
       </div>
 
-      <ImportTotalsCards totals={dashboard} />
-
+      <SystemCountsCards counts={dashboard} />
+      <QueueHealth queue={dashboard.queue} />
+      <ImportTotalsCards totals={dashboard.systemImports} />
       <ProcessingSpeed rowsPerSecond={dashboard.processingSpeed} />
 
       <section>

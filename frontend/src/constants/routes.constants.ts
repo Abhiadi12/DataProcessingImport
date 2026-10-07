@@ -1,6 +1,7 @@
 export const ROUTES = {
   HOME: "/",
   DASHBOARD: "/dashboard",
+  ADMIN_DASHBOARD: "/admin/dashboard",
   LOGIN: "/login",
   REGISTER: "/register",
   PROFILE: "/profile",
@@ -16,8 +17,6 @@ export const projectPath = (id: string) => `/projects/${id}`;
 
 export const importPath = (id: string) => `/imports/${id}`;
 
-// The project detail page keeps its open tab in the URL (?tab=schemas), so a
-// reload or a shared link lands on the same tab.
 export const PROJECT_TAB_PARAM = "tab";
 
 export const PROJECT_TABS = {

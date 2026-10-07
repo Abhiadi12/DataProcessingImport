@@ -32,8 +32,37 @@ export type DashboardScope = "all-projects" | "my-projects";
 
 // GET /dashboard
 export interface Dashboard extends ImportTotals {
-  // Rows per second across recent completed imports; null when none have run.
   processingSpeed: number | null;
   recentImports: RecentImport[];
   scope: DashboardScope;
+}
+
+export interface SystemCounts {
+  totalUsers: number;
+  activeUsers: number;
+  totalProjects: number;
+  activeProjects: number;
+  // Not counting archived schemas.
+  totalSchemas: number;
+}
+
+export interface QueueMetrics {
+  // Jobs waiting for a worker.
+  queueSize: number;
+  // Jobs a worker has taken and not finished.
+  inFlight: number;
+  activeWorkers: number;
+  retryQueueSize: number;
+  deadLetterQueueSize: number;
+  // false = the API could not reach RabbitMQ. The numbers above are then all
+  // 0 but mean "unknown", and must not be shown as zeros.
+  available: boolean;
+}
+
+// GET /admin/dashboard
+export interface AdminDashboard extends SystemCounts {
+  systemImports: ImportTotals;
+  processingSpeed: number | null;
+  queue: QueueMetrics;
+  recentImports: RecentImport[];
 }

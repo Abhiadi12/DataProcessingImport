@@ -112,6 +112,7 @@ export const VALIDATION_MESSAGES = {
 
 export const NAV_MESSAGES = {
   DASHBOARD: "Dashboard",
+  ADMIN: "Admin",
   PROJECTS: "Projects",
   USERS: "Users",
   PROFILE: "Profile",
@@ -376,6 +377,27 @@ export const DASHBOARD_MESSAGES = {
   COLUMN_FAILED: "Failed",
   COLUMN_DUPLICATES: "Duplicates",
   COLUMN_UPLOADED: "Uploaded",
+} as const;
+
+export const ADMIN_DASHBOARD_MESSAGES = {
+  TITLE: "Admin dashboard",
+  SUBTITLE: "The whole platform: every user, project and import, and the health of the queue.",
+  SYSTEM_TITLE: "Platform",
+  USERS: "Users",
+  ACTIVE_USERS: "Active users",
+  PROJECTS: "Projects",
+  ACTIVE_PROJECTS: "Projects with imports",
+  SCHEMAS: "Schemas",
+  QUEUE_TITLE: "Queue health",
+  QUEUE_SIZE: "Waiting in queue",
+  IN_FLIGHT: "Being processed",
+  ACTIVE_WORKERS: "Active workers",
+  RETRY_QUEUE: "Waiting to retry",
+  DEAD_LETTER_QUEUE: "Dead-letter queue",
+  QUEUE_UNAVAILABLE:
+    "Queue metrics are unavailable: the server could not reach RabbitMQ. The numbers below are unknown, not zero.",
+  UNKNOWN: "—",
+  NO_WORKERS: "No workers are running, so queued imports will not be processed.",
 } as const;
 
 export const FILE_INPUT_MESSAGES = {

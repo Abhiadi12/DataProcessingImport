@@ -29,9 +29,7 @@ export const API_ENDPOINTS = {
     byId: (id: string) => `/projects/${id}`,
     members: (id: string) => `/projects/${id}/members`,
     member: (id: string, userId: string) => `/projects/${id}/members/${userId}`,
-    // A project's own schemas plus every global one.
     importSchemas: (id: string) => `/projects/${id}/import-schemas`,
-    // POST prepares an upload (step 1); GET lists the project's imports.
     imports: (id: string) => `/projects/${id}/imports`,
   },
   IMPORT_SCHEMAS: {
@@ -39,6 +37,7 @@ export const API_ENDPOINTS = {
     byId: (id: string) => `/import-schemas/${id}`,
   },
   DASHBOARD: "/dashboard",
+  ADMIN_DASHBOARD: "/admin/dashboard",
   IMPORTS: {
     start: (id: string) => `/imports/${id}/start`,
     byId: (id: string) => `/imports/${id}`,

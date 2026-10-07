@@ -16,6 +16,7 @@ export const QUERY_KEYS = {
   IMPORT_SCHEMAS_ALL: ["import-schemas"],
   IMPORT_SCHEMAS_LIST: ["import-schemas", "list"],
   IMPORT_SCHEMA_DETAIL: ["import-schemas", "detail"],
+  DASHBOARD: ["dashboard"],
   IMPORTS_ALL: ["imports"],
   IMPORTS_LIST: ["imports", "list"],
   IMPORT_DETAIL: ["imports", "detail"],
@@ -28,6 +29,9 @@ export const QUERY_DEFAULTS = {
 } as const;
 
 export const HEALTH_POLL_INTERVAL_MS = 30_000;
+
+//INFO: How often the dashboard refreshes while any import it covers is running.
+export const DASHBOARD_POLL_INTERVAL_MS = 10_000;
 
 export const IMPORTS_POLL_INTERVAL_MS = 5_000;
 

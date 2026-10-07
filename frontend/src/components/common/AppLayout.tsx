@@ -28,6 +28,11 @@ export function AppLayout() {
             {APP_MESSAGES.NAME}
           </Typography>
           {user && (
+            <Button component={NavLink} to={ROUTES.DASHBOARD} color="inherit">
+              {NAV_MESSAGES.DASHBOARD}
+            </Button>
+          )}
+          {user && (
             <Button component={NavLink} to={ROUTES.HOME} color="inherit">
               {NAV_MESSAGES.PROJECTS}
             </Button>

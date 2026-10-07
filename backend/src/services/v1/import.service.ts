@@ -276,8 +276,8 @@ export class ImportService {
     }
 
     if (record.status === ImportStatus.UPLOADING || record.status === ImportStatus.QUEUED) {
-      const cancelled = await this.importRepository.cancelQueued(importId);
-      if (!cancelled && record.status === ImportStatus.QUEUED) {
+      const cancelled = await this.importRepository.cancelUnclaimed(importId);
+      if (!cancelled) {
         await this.importProgressService.requestCancel(importId);
       }
     } else {

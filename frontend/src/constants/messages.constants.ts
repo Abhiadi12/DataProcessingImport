@@ -111,6 +111,7 @@ export const VALIDATION_MESSAGES = {
 } as const;
 
 export const NAV_MESSAGES = {
+  DASHBOARD: "Dashboard",
   PROJECTS: "Projects",
   USERS: "Users",
   PROFILE: "Profile",
@@ -344,6 +345,37 @@ export const IMPORT_ACTION_MESSAGES = {
   RETRY_CONFIRM: "Retry import",
   DOWNLOAD_ORIGINAL: "Download file",
   DOWNLOAD_ERRORS: "Download error report",
+} as const;
+
+export const DASHBOARD_MESSAGES = {
+  TITLE: "Dashboard",
+  // The API says which projects the numbers cover; the page says so too.
+  SCOPE_MINE: "Across the projects you are a member of.",
+  SCOPE_ALL: "Across every project on the platform.",
+  IMPORTS_TITLE: "Imports",
+  TOTAL_IMPORTS: "Total",
+  ACTIVE_IMPORTS: "Active",
+  COMPLETED_IMPORTS: "Completed",
+  FAILED_IMPORTS: "Failed",
+  RECORDS_TITLE: "Records",
+  RECORDS_PROCESSED: "Processed",
+  RECORDS_SUCCESSFUL: "Successful",
+  RECORDS_FAILED: "Failed",
+  RECORDS_DUPLICATE: "Duplicates",
+  SPEED_TITLE: "Processing speed",
+  SPEED_HINT: "Average across recent completed imports.",
+  NO_SPEED: "No completed imports yet",
+  RECENT_TITLE: "Recent imports",
+  RECENT_EMPTY: "No imports yet. Open a project and upload a file to get started.",
+  COLUMN_FILE: "File",
+  COLUMN_PROJECT: "Project",
+  COLUMN_SCHEMA: "Schema",
+  COLUMN_STATUS: "Status",
+  COLUMN_PROCESSED: "Processed",
+  COLUMN_SUCCESSFUL: "Successful",
+  COLUMN_FAILED: "Failed",
+  COLUMN_DUPLICATES: "Duplicates",
+  COLUMN_UPLOADED: "Uploaded",
 } as const;
 
 export const FILE_INPUT_MESSAGES = {

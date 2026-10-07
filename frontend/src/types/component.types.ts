@@ -1,5 +1,6 @@
 import type { TextFieldProps } from "@mui/material/TextField";
 import type { ReactNode } from "react";
+import type { ImportTotals, RecentImport } from "./dashboard.types";
 import type { ImportDetail, ImportErrorSampleRow, ImportStage, ImportStatus } from "./import.types";
 import type { Project } from "./project.types";
 import type { FieldsDefinition } from "./schema.types";
@@ -213,4 +214,12 @@ export interface ImportLoadErrorProps {
 export interface ImportActionsProps {
   detail: ImportDetail;
   status: ImportStatus;
+}
+
+export interface ImportTotalsCardsProps {
+  totals: ImportTotals;
+}
+
+export interface RecentImportsTableProps {
+  imports: RecentImport[];
 }

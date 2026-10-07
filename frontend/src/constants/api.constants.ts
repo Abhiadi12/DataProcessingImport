@@ -38,6 +38,7 @@ export const API_ENDPOINTS = {
     GLOBAL: "/import-schemas",
     byId: (id: string) => `/import-schemas/${id}`,
   },
+  DASHBOARD: "/dashboard",
   IMPORTS: {
     start: (id: string) => `/imports/${id}/start`,
     byId: (id: string) => `/imports/${id}`,

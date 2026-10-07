@@ -29,9 +29,9 @@ export function ImportActions({ detail, status }: ImportActionsProps) {
   const download = useDownloadImportFile();
   const [confirming, setConfirming] = useState<"cancel" | "retry" | null>(null);
 
-  const isActive = ACTIVE_IMPORT_STATUSES.includes(status);
+  const canCancel = ACTIVE_IMPORT_STATUSES.includes(status);
   // Accepted but not yet acted on: the worker stops after its current batch.
-  const isCancelling = isActive && cancelImport.isSuccess;
+  const isCancelling = canCancel && cancelImport.isSuccess;
   const canRetry =
     RETRYABLE_IMPORT_STATUSES.includes(status) &&
     (hasRole(user, ROLE.MANAGER) || detail.uploadedById === user?.id);
@@ -75,7 +75,7 @@ export function ImportActions({ detail, status }: ImportActionsProps) {
       aria-label={IMPORT_ACTION_MESSAGES.ACTIONS_LABEL}
       className="flex flex-wrap gap-2"
     >
-      {isActive && (
+      {canCancel && (
         <Button
           variant="outlined"
           color="error"

@@ -3,11 +3,6 @@ import { env } from "../config/env.js";
 import { logger } from "../utils/logger.js";
 import { container } from "../container.js";
 
-// ensureBucket lives here and not in createApp() on purpose: createApp() is what
-// supertest builds in tests, and it must stay synchronous and network-free.
-// Boot is also the right place to fail — an API that can't issue presigned URLs
-// should refuse to start rather than accept traffic and 500 on every upload,
-// the same reasoning as env.ts exiting on bad config.
 async function bootstrap(): Promise<void> {
   await container.storageService.ensureBucket();
   await container.queueConnection.connect();

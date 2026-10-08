@@ -66,6 +66,27 @@ services:
       timeout: 5s
       retries: 5
 
+  worker:
+    build: ./backend
+    command: [ "node", "dist/worker/index.js" ]
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 60s
+    env_file:
+      - ./backend/.env
+      - ./backend/.env.docker # later file wins: localhost -> service names
+    environment:
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rustfs:
+        condition: service_healthy
+
   # Production build of the React app, served by Nginx, which also forwards
   # /api and /health to the backend so the browser sees a single origin.
   frontend:

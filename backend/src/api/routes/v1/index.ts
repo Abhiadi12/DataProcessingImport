@@ -1,0 +1,17 @@
+import { Router } from "express";
+import { authRouter } from "./auth.routes.js";
+import { adminDashboardRouter, dashboardRouter } from "./dashboard.routes.js";
+import { importRouter } from "./import.routes.js";
+import { importSchemaRouter } from "./import-schema.routes.js";
+import { projectRouter } from "./project.routes.js";
+import { userRouter } from "./user.routes.js";
+
+export const v1Router = Router();
+
+v1Router.use("/auth", authRouter);
+v1Router.use("/users", userRouter);
+v1Router.use("/projects", projectRouter);
+v1Router.use("/import-schemas", importSchemaRouter);
+v1Router.use("/imports", importRouter);
+v1Router.use("/dashboard", dashboardRouter);
+v1Router.use("/admin", adminDashboardRouter);

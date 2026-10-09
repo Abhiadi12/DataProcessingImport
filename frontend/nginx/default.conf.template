@@ -1,0 +1,65 @@
+# Rendered to /etc/nginx/conf.d/default.conf when the container starts.
+# Only ${API_UPSTREAM} is replaced; Nginx's own $variables are left alone.
+#
+# One origin for everything: the browser loads the app and calls /api on the
+# same host, so the refresh cookie stays SameSite=Lax and no CORS is needed —
+# the same arrangement Vite's dev proxy provides locally.
+
+server {
+  listen 8080;
+  server_name _;
+
+  root /usr/share/nginx/html;
+  index index.html;
+
+  # Don't advertise the Nginx version.
+  server_tokens off;
+
+  include /etc/nginx/snippets/security-headers.conf;
+
+  gzip on;
+  gzip_types text/css application/javascript application/json image/svg+xml;
+  gzip_min_length 1024;
+
+  # Liveness of this container only (used by the Docker healthcheck).
+  location = /healthz {
+    access_log off;
+    default_type text/plain;
+    return 200 "ok\n";
+  }
+
+  # ---- API ------------------------------------------------------------------
+  location /api/ {
+    proxy_pass ${API_UPSTREAM};
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  # The backend's own health endpoint lives outside /api (used by the header's
+  # API status chip).
+  location = /health {
+    proxy_pass ${API_UPSTREAM};
+    proxy_set_header Host $host;
+  }
+
+  # ---- Static files ---------------------------------------------------------
+  # Vite puts a content hash in every file name under /assets, so a given URL
+  # never changes content and can be cached for a year.
+  location /assets/ {
+    include /etc/nginx/snippets/security-headers.conf;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+    try_files $uri =404;
+  }
+
+  # Everything else is a client-side route (/projects/123, /login, ...): serve
+  # index.html and let React Router take over. index.html itself must never be
+  # cached, or browsers keep loading an old build after a deploy.
+  location / {
+    include /etc/nginx/snippets/security-headers.conf;
+    add_header Cache-Control "no-cache";
+    try_files $uri $uri/ /index.html;
+  }
+}

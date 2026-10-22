@@ -19,3 +19,9 @@ export const LOGIN_RATE_LIMIT = {
   limit: 5,
   windowSeconds: 10 * 60,
 } as const;
+
+export const IMPORT_RATE_LIMIT = {
+  name: "import",
+  limit: 10,
+  windowSeconds: 60,
+} as const;

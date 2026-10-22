@@ -104,6 +104,7 @@ export const IMPORT_MESSAGES = {
   NOT_CANCELLABLE: "This import has already finished and cannot be cancelled",
   CANCELLED: "Import cancellation requested",
   NO_ERROR_REPORT: "This import has no error report",
+  TOO_MANY_REQUESTS: "Too many import requests. Please wait a minute and try again.",
   LIST_FETCHED: "Imports fetched",
   FETCHED: "Import fetched",
   PROGRESS_FETCHED: "Import progress fetched",

@@ -7,6 +7,7 @@ export const REDIS_KEYS = {
   progress: (importId: string): string => `import:${importId}:progress`,
   /** STRING "1": set by the cancel endpoint, polled by the worker between batches. */
   cancel: (importId: string): string => `import:${importId}:cancel`,
+  rateLimit: (name: string, id: string): string => `ratelimit:${name}:${id}`,
 } as const;
 
 /**

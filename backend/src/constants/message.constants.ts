@@ -20,6 +20,7 @@ export const AUTH_MESSAGES = {
   LOGGED_OUT: "Logged out",
   LOGGED_OUT_EVERYWHERE: "Logged out of all sessions",
   REUSE_DETECTED: "Refresh token reuse detected; session family revoked",
+  TOO_MANY_LOGIN_ATTEMPTS: "Too many login attempts. Please try again later.",
 } as const;
 
 export const USER_MESSAGES = {

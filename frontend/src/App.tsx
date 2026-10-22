@@ -1,3 +1,4 @@
+import { lazy } from "react";
 import { Route, Routes } from "react-router";
 import { GuestOnly } from "@/components/auth/GuestOnly";
 import { RequireAuth } from "@/components/auth/RequireAuth";
@@ -5,16 +6,23 @@ import { AppLayout } from "@/components/common/AppLayout";
 import { AppSnackbar } from "@/components/common/AppSnackbar";
 import { ROLE, ROUTES } from "@/constants";
 import { useRestoreSession } from "@/hooks/useRestoreSession";
-import { AdminDashboardPage } from "@/pages/AdminDashboardPage";
-import { DashboardPage } from "@/pages/DashboardPage";
-import { ImportDetailPage } from "@/pages/ImportDetailPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ProjectDetailPage } from "@/pages/ProjectDetailPage";
 import { ProjectsPage } from "@/pages/ProjectsPage";
 import { RegisterPage } from "@/pages/RegisterPage";
-import { UsersPage } from "@/pages/UsersPage";
+
+const AdminDashboardPage = lazy(() =>
+  import("@/pages/AdminDashboardPage").then((m) => ({ default: m.AdminDashboardPage })),
+);
+const UsersPage = lazy(() => import("@/pages/UsersPage").then((m) => ({ default: m.UsersPage })));
+const DashboardPage = lazy(() =>
+  import("@/pages/DashboardPage").then((m) => ({ default: m.DashboardPage })),
+);
+const ImportDetailPage = lazy(() =>
+  import("@/pages/ImportDetailPage").then((m) => ({ default: m.ImportDetailPage })),
+);
 
 export function App() {
   useRestoreSession();

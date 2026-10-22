@@ -9,9 +9,10 @@ import LinearProgress from "@mui/material/LinearProgress";
 import MenuItem from "@mui/material/MenuItem";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { FileInput } from "@/components/common/FileInput";
 import { Input } from "@/components/common/Input";
+import { CsvHeaderHint } from "@/components/import/CsvHeaderHint";
 import {
   COMMON_MESSAGES,
   IMPORT_FILE_ACCEPT,
@@ -47,6 +48,9 @@ export function UploadImportDialog({ open, projectId, onClose }: UploadImportDia
     resolver: zodResolver(uploadImportSchema),
     defaultValues: DEFAULT_VALUES,
   });
+
+  const selectedSchemaId = useWatch({ control, name: "schemaId" });
+  const selectedSchema = schemaOptions.find((schema) => schema.id === selectedSchemaId);
 
   const [attempt, setAttempt] = useState<UploadAttempt | null>(null);
 
@@ -127,7 +131,14 @@ export function UploadImportDialog({ open, projectId, onClose }: UploadImportDia
                 label={IMPORTS_MESSAGES.SCHEMA_LABEL}
                 disabled={isBusy || schemaOptions.length === 0}
                 error={Boolean(errors.schemaId)}
-                helperText={errors.schemaId?.message ?? IMPORTS_MESSAGES.SCHEMA_HINT}
+                helperText={
+                  errors.schemaId?.message ?? (
+                    <span className="inline-flex items-center gap-1">
+                      {IMPORTS_MESSAGES.SCHEMA_HINT}
+                      <CsvHeaderHint schema={selectedSchema} />
+                    </span>
+                  )
+                }
                 {...field}
               >
                 {schemaOptions.map((schema) => (

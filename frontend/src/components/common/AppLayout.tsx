@@ -2,6 +2,7 @@ import AppBar from "@mui/material/AppBar";
 import Button from "@mui/material/Button";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
+import { Suspense } from "react";
 import { Link as RouterLink, NavLink, Outlet, useLocation } from "react-router";
 import { UserMenu } from "@/components/user/UserMenu";
 import { APP_MESSAGES, NAV_MESSAGES, ROLE, ROUTES } from "@/constants";
@@ -9,6 +10,7 @@ import { useAppSelector } from "@/hooks/redux.hooks";
 import { selectCurrentUser } from "@/store/slices/auth.slice";
 import { ApiStatusChip } from "./ApiStatusChip";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { PageLoader } from "./PageLoader";
 
 export function AppLayout() {
   const { pathname } = useLocation();
@@ -56,7 +58,9 @@ export function AppLayout() {
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
         <ErrorBoundary key={pathname}>
-          <Outlet />
+          <Suspense fallback={<PageLoader />}>
+            <Outlet />
+          </Suspense>
         </ErrorBoundary>
       </main>
     </div>

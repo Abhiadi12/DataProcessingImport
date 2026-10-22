@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import type { ImportTotals, QueueMetrics, RecentImport, SystemCounts } from "./dashboard.types";
 import type { ImportDetail, ImportErrorSampleRow, ImportStage, ImportStatus } from "./import.types";
 import type { Project } from "./project.types";
-import type { FieldsDefinition } from "./schema.types";
+import type { FieldsDefinition, ImportSchema } from "./schema.types";
 import type { DataTablePagination } from "./table.types";
 import type { PublicUser, Role, UpdateUserInput } from "./user.types";
 
@@ -175,6 +175,10 @@ export interface UploadImportDialogProps {
   open: boolean;
   projectId: string;
   onClose: () => void;
+}
+
+export interface CsvHeaderHintProps {
+  schema?: ImportSchema;
 }
 
 export interface ImportStatusChipProps {

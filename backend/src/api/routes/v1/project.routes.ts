@@ -9,6 +9,7 @@ import { authenticate } from "../../middlewares/authenticate.middleware.js";
 import { requireProjectAccess } from "../../middlewares/require-project-access.middleware.js";
 import { requireRole } from "../../middlewares/require-role.middleware.js";
 import { idempotency } from "../../middlewares/idempotency.middleware.js";
+import { importRateLimit } from "../../middlewares/rate-limit.middleware.js";
 import { validate } from "../../middlewares/validate.middleware.js";
 import {
   createProjectSchema,
@@ -123,6 +124,7 @@ projectRouter.post(
   authenticate,
   validate({ params: projectIdParamSchema, body: createImportSchema }),
   requireProjectAccess(),
+  importRateLimit,
   idempotency("POST /api/v1/projects/:id/imports"),
   v1ImportController.prepareUpload,
 );

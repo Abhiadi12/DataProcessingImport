@@ -428,6 +428,12 @@ export const IMPORTS_MESSAGES = {
   FILE_HINT: "CSV only, up to 2 GB. The first row must be the column names.",
   SCHEMA_LABEL: "Schema",
   SCHEMA_HINT: "The file's columns are checked against this schema.",
+  HEADERS_INFO_LABEL: "How to name your CSV columns",
+  HEADERS_RULE:
+    "The first row of your CSV must use the schema's field names exactly — same spelling and capitalisation.",
+  HEADERS_PICK_SCHEMA: "Pick a schema to see its field names.",
+  headersRequired: (names: string[]) => `Required: ${names.join(", ")}`,
+  headersOptional: (names: string[]) => `Optional: ${names.join(", ")}`,
   NO_SCHEMAS: "This project has no schemas yet. Create one in the Schemas tab first.",
   UPLOAD_SUBMIT: "Upload and import",
   CANCEL_UPLOAD: "Cancel upload",

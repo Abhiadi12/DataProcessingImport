@@ -2,6 +2,7 @@ import { Router } from "express";
 import { v1ImportController } from "../../controllers/index.js";
 import { authenticate } from "../../middlewares/authenticate.middleware.js";
 import { idempotency } from "../../middlewares/idempotency.middleware.js";
+import { importRateLimit } from "../../middlewares/rate-limit.middleware.js";
 import { validate } from "../../middlewares/validate.middleware.js";
 import { importIdParamSchema } from "../../schemas/v1/import.schema.js";
 
@@ -23,6 +24,7 @@ importRouter.post(
   "/:id/start",
   authenticate,
   validate({ params: importIdParamSchema }),
+  importRateLimit,
   v1ImportController.startImport,
 );
 
@@ -66,6 +68,7 @@ importRouter.post(
   "/:id/retry",
   authenticate,
   validate({ params: importIdParamSchema }),
+  importRateLimit,
   idempotency("POST /api/v1/imports/:id/retry"),
   v1ImportController.retryImport,
 );

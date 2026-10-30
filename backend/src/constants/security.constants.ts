@@ -13,3 +13,15 @@ export const JWT_ALGORITHM = "HS256" as const;
 export const JWT_SECRET_MIN_LENGTH = 32;
 
 export const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+export const LOGIN_RATE_LIMIT = {
+  name: "login",
+  limit: 5,
+  windowSeconds: 10 * 60,
+} as const;
+
+export const IMPORT_RATE_LIMIT = {
+  name: "import",
+  limit: 10,
+  windowSeconds: 60,
+} as const;
